@@ -307,176 +307,176 @@ def Convert_kraken_deposit(row):
 
 
 
-def Convert_crypto_exchange(row):
-    """
-    exchange one currency with another (both crypto or fiat currencies)
-    Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
-    Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
-    Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
-    """
+# def Convert_crypto_exchange(row):
+#     """
+#     exchange one currency with another (both crypto or fiat currencies)
+#     Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
+#     Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
+#     Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
+#     """
 
-    new_row = pd.Series({
-        'Date' : row['Timestamp (UTC)'], 
-        'Type' : 'trade', 
-        'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
-        'Received Net Worth' : '', 
-        'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
-        'Sent Net Worth' : '', 
-        'Fee Currency' : '', 
-        'Fee Amount' : '', 
-        'Fee Net Worth' : ''
-    })
-    return new_row
-
-
-def Convert_crypto_viban_exchange(row):
-    """
-    sell for fiat currencies
-    Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
-    Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
-    Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
-    """
-    new_row = pd.Series({
-        'Date' : row['Timestamp (UTC)'], 
-        'Type' : 'sell', 
-        'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
-        'Received Net Worth' : '', 
-        'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
-        'Sent Net Worth' : '', 
-        'Fee Currency' : '', 
-        'Fee Amount' : '', 
-        'Fee Net Worth' : ''
-    })
-    return new_row
-
-def Convert_crypto_withdrawal(row):
-    """
-    Type must be transfer
-    Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
-    Values in Received Currency and Received Amount must match those in Sent Currency and Sent Amount (excluding the fee)
-    Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
-    Input the net worth amount in Fee Net Worth (leave them blank if none)
-
-    Note : 14/04/2024 I had to add the columns Fee Currency & Fee Amount in the crypto app source dataset
-    """
-    new_row = pd.Series({
-        'Date' : row['Timestamp (UTC)'], 
-        'Type' : 'transfer', 
-        'Received Currency' : row['Currency'], 
-        'Received Amount' : row['Amount'], 
-        'Received Net Worth' : '', 
-        'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
-        'Sent Net Worth' : '', 
-        'Fee Currency' : row['Fee Currency'], 
-        'Fee Amount' : row['Fee Amount'], 
-        'Fee Net Worth' : ''
-    })
-    return new_row
+#     new_row = pd.Series({
+#         'Date' : row['Timestamp (UTC)'], 
+#         'Type' : 'trade', 
+#         'Received Currency' : row['To Currency'], 
+#         'Received Amount' : row['To Amount'], 
+#         'Received Net Worth' : '', 
+#         'Sent Currency' : row['Currency'], 
+#         'Sent Amount' : row['Amount'], 
+#         'Sent Net Worth' : '', 
+#         'Fee Currency' : '', 
+#         'Fee Amount' : '', 
+#         'Fee Net Worth' : ''
+#     })
+#     return new_row
 
 
+# def Convert_crypto_viban_exchange(row):
+#     """
+#     sell for fiat currencies
+#     Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
+#     Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
+#     Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
+#     """
+#     new_row = pd.Series({
+#         'Date' : row['Timestamp (UTC)'], 
+#         'Type' : 'sell', 
+#         'Received Currency' : row['To Currency'], 
+#         'Received Amount' : row['To Amount'], 
+#         'Received Net Worth' : '', 
+#         'Sent Currency' : row['Currency'], 
+#         'Sent Amount' : row['Amount'], 
+#         'Sent Net Worth' : '', 
+#         'Fee Currency' : '', 
+#         'Fee Amount' : '', 
+#         'Fee Net Worth' : ''
+#     })
+#     return new_row
 
-def Convert_stake_unstake(row):
-    """
-    Type must be transfer
-    Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
-    Values in Received Currency and Received Amount must match those in Sent Currency and Sent Amount (excluding the fee)
-    Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
-    Input the net worth amount in Fee Net Worth (leave them blank if none)
-    """
-    new_row = pd.Series({
-        'Date' : row['Timestamp (UTC)'], 
-        'Type' : 'transfer', 
-        'Received Currency' : row['Currency'], 
-        'Received Amount' : row['Amount'], 
-        'Received Net Worth' : '', 
-        'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
-        'Sent Net Worth' : '', 
-        'Fee Currency' : '', 
-        'Fee Amount' : '', 
-        'Fee Net Worth' : ''
-    })
-    return new_row
+# def Convert_crypto_withdrawal(row):
+#     """
+#     Type must be transfer
+#     Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
+#     Values in Received Currency and Received Amount must match those in Sent Currency and Sent Amount (excluding the fee)
+#     Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
+#     Input the net worth amount in Fee Net Worth (leave them blank if none)
 
-
-def Convert_buy(row):
-    """
-    Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
-    Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
-    Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
-    """
-    new_row = pd.Series({
-        'Date' : row['Timestamp (UTC)'], 
-        'Type' : 'buy', 
-        'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
-        'Received Net Worth' : '', 
-        'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
-        'Sent Net Worth' : '', 
-        'Fee Currency' : '', 
-        'Fee Amount' : '', 
-        'Fee Net Worth' : ''
-    })
-    return new_row
-
-
-def Convert_buy_google_pay(row):
-    """
-    Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
-    Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
-    Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
-
-    Note : Here, in the source dataset, the columns To curreny and To Amount are empty
-    Also, the columns Currency and Amount are filled with the received currency instead of the spent currency
-    We can use the values in the columns : 'Native Currency' and 'Native Amount', as 'Curreny' and 'Amount' columns in the new dataset
-    """
-    new_row = pd.Series({
-        'Date' : row['Timestamp (UTC)'], 
-        'Type' : 'buy', 
-        'Received Currency' : row['Currency'], 
-        'Received Amount' : row['Amount'], 
-        'Received Net Worth' : '', 
-        'Sent Currency' : row['Native Currency'], 
-        'Sent Amount' : row['Native Amount'], 
-        'Sent Net Worth' : '', 
-        'Fee Currency' : '', 
-        'Fee Amount' : '', 
-        'Fee Net Worth' : ''
-    })
-    return new_row
+#     Note : 14/04/2024 I had to add the columns Fee Currency & Fee Amount in the crypto app source dataset
+#     """
+#     new_row = pd.Series({
+#         'Date' : row['Timestamp (UTC)'], 
+#         'Type' : 'transfer', 
+#         'Received Currency' : row['Currency'], 
+#         'Received Amount' : row['Amount'], 
+#         'Received Net Worth' : '', 
+#         'Sent Currency' : row['Currency'], 
+#         'Sent Amount' : row['Amount'], 
+#         'Sent Net Worth' : '', 
+#         'Fee Currency' : row['Fee Currency'], 
+#         'Fee Amount' : row['Fee Amount'], 
+#         'Fee Net Worth' : ''
+#     })
+#     return new_row
 
 
 
-def Convert_dust_conversion_debited(row):
-    """
-    exchange one currency with another (both crypto or fiat currencies)
-    Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
-    Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
-    Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
+# def Convert_stake_unstake(row):
+#     """
+#     Type must be transfer
+#     Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
+#     Values in Received Currency and Received Amount must match those in Sent Currency and Sent Amount (excluding the fee)
+#     Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
+#     Input the net worth amount in Fee Net Worth (leave them blank if none)
+#     """
+#     new_row = pd.Series({
+#         'Date' : row['Timestamp (UTC)'], 
+#         'Type' : 'transfer', 
+#         'Received Currency' : row['Currency'], 
+#         'Received Amount' : row['Amount'], 
+#         'Received Net Worth' : '', 
+#         'Sent Currency' : row['Currency'], 
+#         'Sent Amount' : row['Amount'], 
+#         'Sent Net Worth' : '', 
+#         'Fee Currency' : '', 
+#         'Fee Amount' : '', 
+#         'Fee Net Worth' : ''
+#     })
+#     return new_row
 
-    Note : I add to rework the source dataset
-    Indeed, each conversion is splitted in two lines in the source dataset, I add to merge them
-    I chose to keep dust_conversion_debited and remove dust_conversion_credited
-    I took the columns values 'Currency' and 'Amount' from dust_conversion_credited and put them in dust_conversion_debited in columns 'To Currency' & 'To Amount'
-    """
 
-    new_row = pd.Series({
-        'Date' : row['Timestamp (UTC)'], 
-        'Type' : 'trade', 
-        'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
-        'Received Net Worth' : '', 
-        'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
-        'Sent Net Worth' : '', 
-        'Fee Currency' : '', 
-        'Fee Amount' : '', 
-        'Fee Net Worth' : ''
-    })
-    return new_row
+# def Convert_buy(row):
+#     """
+#     Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
+#     Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
+#     Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
+#     """
+#     new_row = pd.Series({
+#         'Date' : row['Timestamp (UTC)'], 
+#         'Type' : 'buy', 
+#         'Received Currency' : row['To Currency'], 
+#         'Received Amount' : row['To Amount'], 
+#         'Received Net Worth' : '', 
+#         'Sent Currency' : row['Currency'], 
+#         'Sent Amount' : row['Amount'], 
+#         'Sent Net Worth' : '', 
+#         'Fee Currency' : '', 
+#         'Fee Amount' : '', 
+#         'Fee Net Worth' : ''
+#     })
+#     return new_row
+
+
+# def Convert_buy_google_pay(row):
+#     """
+#     Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
+#     Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
+#     Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
+
+#     Note : Here, in the source dataset, the columns To curreny and To Amount are empty
+#     Also, the columns Currency and Amount are filled with the received currency instead of the spent currency
+#     We can use the values in the columns : 'Native Currency' and 'Native Amount', as 'Curreny' and 'Amount' columns in the new dataset
+#     """
+#     new_row = pd.Series({
+#         'Date' : row['Timestamp (UTC)'], 
+#         'Type' : 'buy', 
+#         'Received Currency' : row['Currency'], 
+#         'Received Amount' : row['Amount'], 
+#         'Received Net Worth' : '', 
+#         'Sent Currency' : row['Native Currency'], 
+#         'Sent Amount' : row['Native Amount'], 
+#         'Sent Net Worth' : '', 
+#         'Fee Currency' : '', 
+#         'Fee Amount' : '', 
+#         'Fee Net Worth' : ''
+#     })
+#     return new_row
+
+
+
+# def Convert_dust_conversion_debited(row):
+#     """
+#     exchange one currency with another (both crypto or fiat currencies)
+#     Received Currency, Received Amount, Sent Currency and Sent Amount must be filled
+#     Input the associated transaction fee in Fee Currency and Fee Amount (leave them blank if none)
+#     Input the net worth amount in Received Net worth, Sent Net Worth and Fee Net Worth (leave them blank if none)
+
+#     Note : I add to rework the source dataset
+#     Indeed, each conversion is splitted in two lines in the source dataset, I add to merge them
+#     I chose to keep dust_conversion_debited and remove dust_conversion_credited
+#     I took the columns values 'Currency' and 'Amount' from dust_conversion_credited and put them in dust_conversion_debited in columns 'To Currency' & 'To Amount'
+#     """
+
+#     new_row = pd.Series({
+#         'Date' : row['Timestamp (UTC)'], 
+#         'Type' : 'trade', 
+#         'Received Currency' : row['To Currency'], 
+#         'Received Amount' : row['To Amount'], 
+#         'Received Net Worth' : '', 
+#         'Sent Currency' : row['Currency'], 
+#         'Sent Amount' : row['Amount'], 
+#         'Sent Net Worth' : '', 
+#         'Fee Currency' : '', 
+#         'Fee Amount' : '', 
+#         'Fee Net Worth' : ''
+#     })
+#     return new_row
