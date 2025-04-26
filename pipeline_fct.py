@@ -1,28 +1,17 @@
 import pandas as pd
 
-def get_currency_list_from_asdf(account_situation_path):
+def get_crypto_list_from_asdf(account_situation_path):
     
     account_situation_columns = pd.read_csv(account_situation_path, sep=',').columns.tolist()
     account_situation_columns.remove('Date')
     account_situation_columns.remove('EUR')
-    account_situation_columns.remove('CRO')
+    account_situation_columns.remove('USD')
     account_situation_columns.remove('Platform')
+    account_situation_columns.remove('Sell_crypto_for_currency')
     return account_situation_columns
 
 
 
-def convert_date_column_in_cryptocom_ready_for_ingest():
-
-    # Define filepath to read and filepath to export
-    ready_for_ingest_filepath = 'Data/1_ready_for_ingest/cryptocom_2023_ready_for_ingest.csv'
-    reworked_df = 'Data/1_ready_for_ingest/cryptocom_2023_ready_for_ingest_reworked.csv'
-    cryptocom_2023_ready_for_ingest = pd.read_csv(ready_for_ingest_filepath, sep=',')
-
-    # Convert date column
-    cryptocom_2023_ready_for_ingest['Date'] = pd.to_datetime(cryptocom_2023_ready_for_ingest['Date'], format='%m/%d/%Y %H:%M:%S')
-
-    # export
-    cryptocom_2023_ready_for_ingest.to_csv(reworked_df, index=False)
 
 
 # import time

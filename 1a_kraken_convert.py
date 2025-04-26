@@ -166,6 +166,10 @@ def main(ledgers_filepath, ready_for_ingest_filepath):
     export_to_excel_for_check(new_df, checkfile_path)
 
 
+ledgers_filepath = "Data/0_original_trade_files/kraken_2023.csv"
+ready_for_ingest_filepath = 'Data/1_ready_for_ingest/kraken_2023_ready_for_ingest.csv'
+main(ledgers_filepath, ready_for_ingest_filepath)
+
 ledgers_filepath = "Data/0_original_trade_files/kraken_2024.csv"
 ready_for_ingest_filepath = 'Data/1_ready_for_ingest/kraken_2024_ready_for_ingest.csv'
 main(ledgers_filepath, ready_for_ingest_filepath)

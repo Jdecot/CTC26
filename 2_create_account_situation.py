@@ -26,9 +26,18 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
     row_asdf_last_row["Date"] = row_ready_for_ingest["Date"]
     row_asdf_last_row["Platform"] = row_ready_for_ingest["platform"]
 
-    if Received_Currency in ['EUR', 'USD'] : row_asdf_last_row['Sell_crypto_for_currency'] = True
-    else : row_asdf_last_row['Sell_crypto_for_currency'] = False
+    # # Case when : Sell crypto for currency
+    # if Received_Currency in ['EUR', 'USD'] and Sent_Currency not in ['EUR', 'USD'] : 
+    #     row_asdf_last_row['Sell_crypto_for_currency'] = True
+    # else : 
+    #     row_asdf_last_row['Sell_crypto_for_currency'] = False
     
+    # # Case when : Buy crypto from currency
+    # if Sent_Currency in ['EUR', 'USD'] and Received_Currency not in ['EUR', 'USD']:
+    #     row_asdf_last_row['Buy_crypto_from_currency'] = True
+    # else : 
+    #     row_asdf_last_row['Buy_crypto_from_currency'] = False
+
     # print(f"Spent {Sent_Amount} {Sent_Currency}, received {Received_Amount}{Received_Currency}")
     # print(f"Old amount : {row_asdf_last_row[Received_Currency]}{Received_Currency} and {row_asdf_last_row[Sent_Currency]}{Sent_Currency}")
 
@@ -50,7 +59,7 @@ def main(ready_for_ingest_filepath,result_filepath):
 
     # Define columns
     unique_currency_list = ready_for_ingest['Received Currency'].unique().tolist()
-    columns = ['Date'] + ['Platform'] + ['Sell_crypto_for_currency'] + unique_currency_list
+    columns = ['Date'] + ['Platform'] + ['Sell_crypto_for_currency'] + ['Buy_crypto_from_currency'] + unique_currency_list
 
     # Define first row (filled with 0 amount of each currency)
     data = {col: 0.0 if col in unique_currency_list else '' for col in columns}

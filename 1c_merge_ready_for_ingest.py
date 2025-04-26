@@ -27,10 +27,12 @@ def main(csv_files_list, all_trades_ready_for_ingest_filepath):
     df_sorted = df_merged.sort_values(by='Date')
     df_sorted.to_csv(all_trades_ready_for_ingest_filepath, index=False)
 
+
 csv_files_list = [
     "cryptocom_2023_ready_for_ingest_date_reworked.csv",
     "kraken_2023_ready_for_ingest.csv",
     "kraken_2024_ready_for_ingest.csv"
 ]
 all_trades_ready_for_ingest_filepath = "Data/1_ready_for_ingest/all_trades_ready_for_ingest.csv"
+
 main(csv_files_list, all_trades_ready_for_ingest_filepath)
