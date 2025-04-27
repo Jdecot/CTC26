@@ -13,7 +13,6 @@ def export_to_excel_for_check(df_ready_to_ingest, checkfile_path):
     filtered_df = df_ready_to_ingest.loc[(df_ready_to_ingest['Type'] == 'transfer')]
     # filtered_df = filtered_df.loc[filtered_df['Date'].isin(dates_cible)]
 
-    print(filtered_df)
     filtered_df.to_csv(checkfile_path, sep=',', index=False)
     # filtered_df.to_excel('my_data.xlsx', index=False)
 
@@ -45,8 +44,6 @@ def treat_row(original_df, new_df, row, index, transaction_kind, currency, refid
     if transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id :
         # Find the two row with refid and create a df with only them
         same_refid_df = original_df.loc[original_df['refid'] == refid]
-        # print("before corft")
-        # print(same_refid_df)
         new_row = Create_one_row_from_two(same_refid_df)
         new_df.loc[index] = new_row
         treated_ref_id.append(refid)
@@ -55,22 +52,17 @@ def treat_row(original_df, new_df, row, index, transaction_kind, currency, refid
     if transaction_kind == 'staking' :
         new_row = Convert_reward_stack_or_other(row)
         new_df.loc[index] = new_row
-        # print("new_row")
-        # print(new_row)
         treated_lines["staking"] += 1
 
     if transaction_kind == 'earn' :
         treated_lines["earn_lines_ignored"] += 1
 
     if transaction_kind == 'trade' and refid not in treated_ref_id :
-        # print("-------------------")
-        # print(row)
         same_refid_df = original_df.loc[original_df['refid'] == refid]
         new_row = Convert_two_trade_row(same_refid_df)
         new_df.loc[index] = new_row
         treated_lines["trade"] += 2
         treated_ref_id.append(refid)
-        # print("-------------------")
 
     return new_df, treated_ref_id, treated_lines
 
@@ -159,7 +151,6 @@ def main(ledgers_filepath, ready_for_ingest_filepath):
         new_df[column_to_modify] = np.abs(new_df[column_to_modify])
         new_df[column_to_modify] = new_df[column_to_modify].apply(format_value)
 
-    print("new df : ", new_df.tail())
 
     # Export to csv
     new_df.to_csv(ready_for_ingest_filepath, sep=',', index=False)
@@ -172,5 +163,9 @@ main(ledgers_filepath, ready_for_ingest_filepath)
 
 ledgers_filepath = "Data/0_original_trade_files/kraken_2024.csv"
 ready_for_ingest_filepath = 'Data/1_ready_for_ingest/kraken_2024_ready_for_ingest.csv'
+main(ledgers_filepath, ready_for_ingest_filepath)
+
+ledgers_filepath = "Data/0_original_trade_files/kraken_2025.csv"
+ready_for_ingest_filepath = 'Data/1_ready_for_ingest/kraken_2025_ready_for_ingest.csv'
 main(ledgers_filepath, ready_for_ingest_filepath)
 

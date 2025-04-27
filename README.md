@@ -1,5 +1,23 @@
 # TAF
 extract_taxable_trades ne doit pas prendre en compte la transaction vendu EUR pour achat USD 
+voir pourquoi des montants de crypto sont négatifs : ONDO ok au 2024-08-06 02:52:48
+Mais négatif au 2024-08-27 15:40:06
+
+2025-01-27 10:39:28,buy,JUP,16.3784,,EUR,14.9625,,EUR,0.0375,,kraken_2025
+2025-02-02 22:53:45,buy,JUP,5.82282,,EUR,4.99,,EUR,0.01,,kraken_2025
+2025-02-03 01:05:14,buy,JUP,5.83444,,EUR,4.99,,EUR,0.01,,kraken_2025
+2025-02-03 02:22:18,buy,JUP,9.55085,,EUR,7.485,,EUR,0.015,,kraken_2025
+2025-02-10 02:15:51,buy,JUP,6.435,,EUR,4.9875,,EUR,0.0125,,kraken_2025
+2025-02-17 13:32:04,buy,JUP,6.2758,,EUR,4.9875,,EUR,0.0125,,kraken_2025
+2025-02-18 18:24:11,buy,JUP,7.5048,,EUR,5.053,,EUR,0.0127,,kraken_2025
+2025-02-25 09:13:28,buy,JUP,7.98084,,EUR,4.9875,,EUR,0.0125,,kraken_2025
+2025-02-26 12:51:31,buy,JUP,7.6923,,EUR,4.9875,,EUR,0.0125,,kraken_2025
+2025-03-06 20:23:58,buy,JUP,17.60749,,EUR,10.0,,JUP,0.04391,,kraken_2025
+2025-03-10 18:43:12,sell,EUR,41.1992,,JUP,90.99492,,EUR,0.0822,,kraken_2025
+
+
+
+
 
 # Documents officiels
 

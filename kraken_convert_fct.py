@@ -173,8 +173,7 @@ def Create_one_row_from_two(same_refid_df) :
 
 
 def Convert_two_trade_row(same_refid_df):
-    # print("origine trade : ")
-    # print(same_refid_df)
+
     for index, row in same_refid_df.iterrows() : 
         # Convert negative amount value to positive and set type as spend
         if row["amount"] < 0:
@@ -183,11 +182,9 @@ def Convert_two_trade_row(same_refid_df):
             same_refid_df.at[index, "type"] = 'receive'
         else : 
             raise ValueError("Une transaction ne peut pas avoir un amount de 0")
-    # print("reworked trade : ")
-    # print(same_refid_df)
+
     new_row = Create_one_row_from_two(same_refid_df)
-    # print("new row : ")
-    # print(new_row)
+
     return new_row
 
 def Convert_reward_stack_or_other(row):
