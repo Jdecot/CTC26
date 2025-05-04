@@ -66,7 +66,11 @@ def get_kraken_price_files_name():
         'ONDO'  : 'ONDOEUR',
         'USDC'  : 'USDCEUR',
         'PEPE'  : 'PEPEEUR',
-        'JUP'   : 'JUPEUR'
+        'JUP'   : 'JUPEUR',
+        'DOGE'  :'DOGEEUR',
+        'TAO'   : 'TAOEUR',
+        'SUI'   : 'SUIEUR',
+        'CRO'   : 'CROEUR',
     }
     return crypto_prices_files
 

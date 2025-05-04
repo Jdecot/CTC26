@@ -32,11 +32,16 @@ Plus ou moins-value brute = Prix de cession – [Prix total d'acquisition x Prix
 Prix de cession : Prix réel perçu par le cédant lors de la cession. 
 Le cas échéant, il doit être majoré de la soulte que le cédant a reçue lors de la cession ou minoré de la soulte qu’il a versée lors de cette même cession. Il est également réduit, sur justificatifs, des frais supportés par le cédant à l’occasion de cette cession.
 
+les frais de transaction payés à la plateforme d’échange ou aux mineurs sont à considérer soit comme une réduction du prix de vente, soit comme une augmentation du prix d’acquisition.
+
 Valeur globale du portefeuille au moment de la cession : 
 La somme des valeurs, au moment de la cession, des différentes crypto détenus par le cédant AVANT de procéder à la cession. 
 
 Le prix total d'acquisition :
 Somme de tous les prix acquittés en monnaie ayant cours légal à l'occasion de l'ensemble des acquisitions de crypto réalisées avant la cession, et de la valeur des biens ou services, comprenant le cas échéant les soultes versées, fournis en contrepartie de ces acquisitions.
+
+Vidéo youtube très bien expliqué sur la méthode de calcul : 
+https://www.youtube.com/watch?v=yzjlPIZRPIQ&ab_channel=JulienGuilloux
 
 
 Aide générale et non officiel :

@@ -17,11 +17,11 @@ def export_to_excel_for_check(df_ready_to_ingest, checkfile_path):
     # filtered_df.to_excel('my_data.xlsx', index=False)
 
 
-def treat_row(original_df, new_df, row, index, transaction_kind, currency, refid, treated_ref_id, treated_lines):
+def treat_row(ledger_df, rfi_df, row, index, transaction_kind, currency, refid, treated_ref_id, treated_lines):
     if transaction_kind == 'deposit' and  currency not in ['EUR', 'USD']:
         # Il faut modifier chaque ligne deposit directement dans tax.crypto.com pour ajouter le wallet destination
         new_row = Convert_kraken_deposit(row)
-        new_df.loc[index] = new_row
+        rfi_df.loc[index] = new_row
         treated_lines["deposit_in_crypto"] += 1
     
     if transaction_kind == 'deposit' and  currency in ['EUR', 'USD']:
@@ -30,7 +30,7 @@ def treat_row(original_df, new_df, row, index, transaction_kind, currency, refid
     if transaction_kind == 'withdrawal' and  currency not in ['EUR', 'USD'] :
         # print("transaction_kind : ", transaction_kind)
         new_row = Convert_kraken_withdrawal(row)
-        new_df.loc[index] = new_row
+        rfi_df.loc[index] = new_row
         treated_lines["withdrawal_crypto"] += 1
 
     if  transaction_kind == 'withdrawal' and  currency in ['EUR', 'USD'] :
@@ -43,28 +43,35 @@ def treat_row(original_df, new_df, row, index, transaction_kind, currency, refid
     # It's necessary to merge them. The two lines shares the same refid.
     if transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id :
         # Find the two row with refid and create a df with only them
-        same_refid_df = original_df.loc[original_df['refid'] == refid]
+        same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
         new_row = Create_one_row_from_two(same_refid_df)
-        new_df.loc[index] = new_row
+        rfi_df.loc[index] = new_row
         treated_ref_id.append(refid)
         treated_lines["send_and_receive"] += 2
 
     if transaction_kind == 'staking' :
         new_row = Convert_reward_stack_or_other(row)
-        new_df.loc[index] = new_row
+        rfi_df.loc[index] = new_row
         treated_lines["staking"] += 1
 
     if transaction_kind == 'earn' :
         treated_lines["earn_lines_ignored"] += 1
 
     if transaction_kind == 'trade' and refid not in treated_ref_id :
-        same_refid_df = original_df.loc[original_df['refid'] == refid]
+
+        same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
         new_row = Convert_two_trade_row(same_refid_df)
-        new_df.loc[index] = new_row
+        rfi_df.loc[index] = new_row
         treated_lines["trade"] += 2
         treated_ref_id.append(refid)
 
-    return new_df, treated_ref_id, treated_lines
+    return rfi_df, treated_ref_id, treated_lines
+
+
+def export_depo_withdraw_csv(df):
+    depo_width_filepath = 'Data/other/deposit_withdrawal.csv'
+    filtered_df = df.loc[(df['type'] == 'deposit') | (df['type'] == 'withdrawal')]
+    filtered_df.to_csv(depo_width_filepath, sep=',', index=False)
 
 
 def main(ledgers_filepath, ready_for_ingest_filepath):
@@ -76,18 +83,17 @@ def main(ledgers_filepath, ready_for_ingest_filepath):
 
     # File path
     checkfile_path = 'Data/other/export_for_check.csv'
-    depo_width_filepath = 'Data/other/deposit_withdrawal.csv'
-
-
-    # Import data file and create empty export file (to be filled)
-    original_df = pd.read_csv(ledgers_filepath, sep=',')
-    new_df = pd.DataFrame(columns=["Date", "Type", "Received Currency",	"Received Amount", "Received Net Worth", "Sent Currency", "Sent Amount", "Sent Net Worth", "Fee Currency", "Fee Amount", "Fee Net Worth"])
-
-    filtered_df = original_df.loc[(original_df['type'] == 'deposit') | (original_df['type'] == 'withdrawal')]
-    filtered_df.to_csv(depo_width_filepath, sep=',', index=False)
     
 
-    print("nombre de lignes df original : ", len(original_df))
+    # Import data file and create empty export file (to be filled)
+    ledger_df = pd.read_csv(ledgers_filepath, sep=',')
+    rfi_df = pd.DataFrame(columns=["Date", "Type", "Received Currency",	"Received Amount", "Received Net Worth", "Sent Currency", "Sent Amount", "Sent Net Worth", "Fee Currency", "Fee Amount", "Fee Net Worth"])
+
+    export_depo_withdraw_csv(ledger_df)
+
+    
+
+    print("nombre de lignes df original : ", len(ledger_df))
 
     treated_ref_id = []
     treated_lines = {
@@ -104,16 +110,16 @@ def main(ledgers_filepath, ready_for_ingest_filepath):
 
     # Filter only certain dates to test 
     # dates_cible = ["2023-12-14 11:03:44", "2024-04-17 21:25:49", "2024-04-17 21:26:17", "2024-03-19 23:48:06"]
-    # original_df = original_df.loc[original_df['time'].isin(dates_cible)]
-    # print(original_df.head(10))
+    # ledger_df = ledger_df.loc[ledger_df['time'].isin(dates_cible)]
+    # print(ledger_df.head(10))
 
 
-    for index in original_df.index:
+    for index in ledger_df.index:
         # print('index : ', index)
     # for index in range(0,8):
 
         # Get main datas from the currently observed row
-        row = original_df.loc[index]
+        row = ledger_df.loc[index]
 
         transaction_kind = row['type']
         refid = row['refid']
@@ -121,21 +127,21 @@ def main(ledgers_filepath, ready_for_ingest_filepath):
 
 
 
-        new_df, treated_ref_id, treated_lines = treat_row(original_df, new_df, row, index, transaction_kind, currency, refid, treated_ref_id, treated_lines)
+        rfi_df, treated_ref_id, treated_lines = treat_row(ledger_df, rfi_df, row, index, transaction_kind, currency, refid, treated_ref_id, treated_lines)
 
 
     print("lignes traités")
     print(treated_lines)
     print("total : ", sum(treated_lines.values()))
     
-    print("taille new df : ", len(new_df))
+    print("taille new df : ", len(rfi_df))
 
 
         
     # ---------- Modify the datetime format of the column 
     # current_date_format = '%d/%m/%Y %H:%M:%S'
-    # colonne_dates_formatee = pd.to_datetime(new_df['Date'], format=current_date_format).dt.strftime('%m/%d/%Y %H:%M:%S')
-    # new_df['Date'] = colonne_dates_formatee
+    # colonne_dates_formatee = pd.to_datetime(rfi_df['Date'], format=current_date_format).dt.strftime('%m/%d/%Y %H:%M:%S')
+    # rfi_df['Date'] = colonne_dates_formatee
 
 
     # ---------- Convert columns to positive values (because no negative values allowed)
@@ -147,25 +153,27 @@ def main(ledgers_filepath, ready_for_ingest_filepath):
         
     pd.set_option('display.float_format', '{:.10f}'.format)
     for column_to_modify in ['Received Amount', 'Sent Amount', 'Fee Amount']:
-        new_df[column_to_modify] = pd.to_numeric(new_df[column_to_modify], errors='coerce')
-        new_df[column_to_modify] = np.abs(new_df[column_to_modify])
-        new_df[column_to_modify] = new_df[column_to_modify].apply(format_value)
+        rfi_df[column_to_modify] = pd.to_numeric(rfi_df[column_to_modify], errors='coerce')
+        rfi_df[column_to_modify] = np.abs(rfi_df[column_to_modify])
+        rfi_df[column_to_modify] = rfi_df[column_to_modify].apply(format_value)
 
 
     # Export to csv
-    new_df.to_csv(ready_for_ingest_filepath, sep=',', index=False)
-    export_to_excel_for_check(new_df, checkfile_path)
+    rfi_df.to_csv(ready_for_ingest_filepath, sep=',', index=False)
+    export_to_excel_for_check(rfi_df, checkfile_path)
 
 
-ledgers_filepath = "Data/0_original_trade_files/kraken_2023.csv"
-ready_for_ingest_filepath = 'Data/1_ready_for_ingest/kraken_2023_ready_for_ingest.csv'
-main(ledgers_filepath, ready_for_ingest_filepath)
 
-ledgers_filepath = "Data/0_original_trade_files/kraken_2024.csv"
-ready_for_ingest_filepath = 'Data/1_ready_for_ingest/kraken_2024_ready_for_ingest.csv'
-main(ledgers_filepath, ready_for_ingest_filepath)
 
-ledgers_filepath = "Data/0_original_trade_files/kraken_2025.csv"
-ready_for_ingest_filepath = 'Data/1_ready_for_ingest/kraken_2025_ready_for_ingest.csv'
-main(ledgers_filepath, ready_for_ingest_filepath)
+ledger_path = "Data/0_original_trade_files"
+ledger_filename = [
+    "kraken_2023",
+    "kraken_2024",
+    "kraken_2025"
+]
+
+for ledger_filename in ledger_filename : 
+    ledger_filepath = f"{ledger_path}/{ledger_filename}.csv"
+    ready_for_ingest_filepath = f'Data/1_ready_for_ingest/{ledger_filename}_ready_for_ingest.csv'
+    main(ledger_filepath, ready_for_ingest_filepath)
 
