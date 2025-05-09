@@ -44,6 +44,11 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
     row_asdf_last_row["Date"] = row_ready_for_ingest["Date"]
     row_asdf_last_row["Platform"] = row_ready_for_ingest["platform"]
     row_asdf_last_row["Type"] = row_ready_for_ingest["Type"]
+
+    row_asdf_last_row['Fee Currency'] = row_ready_for_ingest['Fee Currency']
+    row_asdf_last_row['Fee Amount'] = row_ready_for_ingest['Fee Amount']
+    row_asdf_last_row['Fee Net Worth'] = row_ready_for_ingest['Fee Net Worth']
+
     row_asdf_last_row['Money_movement'] = 0
 
     # Detection des trades impliquant une devise (qui devraient alors être sell ou buy plutôt que trade)
@@ -75,8 +80,8 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
         row_asdf_last_row['EUR_received'] = row_asdf_last_row['EUR_received'] + float(row_ready_for_ingest['Received Amount'])*0.9222
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Received Amount'])*0.9222
 
-    
-    
+
+
 
     return row_asdf_last_row
 
@@ -93,7 +98,8 @@ def main(ready_for_ingest_filepath,result_filepath):
     crypto_used_list = pipeline_fct.get_crypto_list_from_all_trades()
     print("crypto_used_list : ", crypto_used_list)
     currency_situation_list = ['EUR_spent','EUR_received']
-    combined_list = crypto_used_list + currency_situation_list
+    fees_list = ['Fee Currency','Fee Amount','Fee Net Worth']
+    combined_list = crypto_used_list + currency_situation_list + fees_list
 
     columns = ['Date'] + ['Platform'] + ['Type'] + ['Money_movement'] + combined_list
 

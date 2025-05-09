@@ -24,47 +24,68 @@ def treat_row_v2(ledger_df, row):
     new_row = None
     global treated_lines, treated_ref_id
 
+    # print(f"***********  treat row : {row['time']} - {refid}  ***************")
     if transaction_kind == 'deposit' and  currency not in ['EUR', 'USD']:
         # Il faut modifier chaque ligne deposit directement dans tax.crypto.com pour ajouter le wallet destination
         new_row = Convert_kraken_deposit(row)
         treated_lines["deposit_in_crypto"] += 1
+        # print("Treated as deposit in crypto")
     
-    if transaction_kind == 'deposit' and  currency in ['EUR', 'USD']:
+    elif transaction_kind == 'deposit' and  currency in ['EUR', 'USD']:
         treated_lines["deposit_in_fiat"] += 1
+        # print("Treated as deposit in currency")
 
-    if transaction_kind == 'withdrawal' and  currency not in ['EUR', 'USD'] :
+    elif transaction_kind == 'withdrawal' and  currency not in ['EUR', 'USD'] :
         # print("transaction_kind : ", transaction_kind)
         new_row = Convert_kraken_withdrawal(row)
         treated_lines["withdrawal_crypto"] += 1
+        # print("Treated as withdrawal in crypto")
 
-    if  transaction_kind == 'withdrawal' and  currency in ['EUR', 'USD'] :
+    elif  transaction_kind == 'withdrawal' and  currency in ['EUR', 'USD'] :
         treated_lines["withdrawal_eur_ignored"] += 1
+        # print("Treated as withdrawal in currency")
 
-    if transaction_kind == 'transfer' :
+    elif transaction_kind == 'transfer' :
         treated_lines["transfert_line_ignored"] += 1
+        # print("Treated as transfer")
 
     # All buy or send appears in two lines, one for the currency sold and one for the currency bought
     # It's necessary to merge them. The two lines shares the same refid.
-    if transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id :
+    elif transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id :
         # Find the two row with refid and create a df with only them
+        # print("************ Row spend and receive ************")
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
         new_row = Create_one_row_from_two(same_refid_df)
         treated_ref_id.append(refid)
         treated_lines["send_and_receive"] += 2
-
-    if transaction_kind == 'staking' :
+        print(f"******* date : {new_row['Date']} *************")
+        print(f"{new_row['Type']} : reçu {new_row['Received Amount']} {new_row['Received Currency']}, sent {new_row['Sent Amount']} {new_row['Sent Currency']} ")
+        print(f"Frais de transaction : {new_row['Fee Amount']} {new_row['Fee Currency']} ")
+        print("Treated as spend receive")
+        
+    elif transaction_kind == 'staking' :
         new_row = Convert_reward_stack_or_other(row)
         treated_lines["staking"] += 1
+        # print("Treated as staking")
 
-    if transaction_kind == 'earn' :
+    elif transaction_kind == 'earn' :
         treated_lines["earn_lines_ignored"] += 1
+        # print("Treated as earn")
 
-    if transaction_kind == 'trade' and refid not in treated_ref_id :
-
+    elif transaction_kind == 'trade' and refid not in treated_ref_id :
+        # print("************ Row trade ************")
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
+        # print(same_refid_df)
         new_row = Convert_two_trade_row(same_refid_df)
         treated_lines["trade"] += 2
         treated_ref_id.append(refid)
+        # print(f"new row : {new_row['Date']}")
+
+    # else : 
+    #     if refid in treated_ref_id :
+    #         print("Already treated")
+    #     else : 
+    #         print("Not treated")
 
     return new_row
 
@@ -137,7 +158,7 @@ def convert_ledger_to_rfi(ledger_df):
         if new_row is not None : rfi_df.loc[index] = new_row
 
     print("lignes traités : ", treated_lines)
-    print("total : ", sum(treated_lines.values()))
+    print("total lignes traités : ", sum(treated_lines.values()))
     print("taille new df : ", len(rfi_df))
 
     rfi_df = convert_columns_to_positive_values(rfi_df.copy(), ['Received Amount', 'Sent Amount', 'Fee Amount'])
