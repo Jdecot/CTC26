@@ -178,8 +178,7 @@ def main(enriched_situation_path, account_situation_path):
                 if lignes_trouvees_in_price_db[f"{crypto}_price"].isnull().any() :
                     # print(f"Cellule trouvé dans la ligne pour {crypto}_price : {lignes_trouvees_in_price_db[f"{crypto}_price"]}")
                     # Si le prix trouvé dans price_db_df est inexploitable, on tente dans kraken file
-                    if len(kraken_prices_file_df)  > 0 :
-                        # print(f"On cherche le prix dans le fichier kraken, qui a déjà été ouvert")
+                    if len(kraken_prices_file_df)  > 0 :  # On cherche le prix dans le fichier kraken, qui a déjà été ouvert
                         average_price, status = find_average_price_with_kraken_file(kraken_prices_file_df, trade_date, crypto)
                     else : 
                         # print(f"chargement du fichier des prix kreaken pour {crypto}")

@@ -81,13 +81,13 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
     """
 
     # if sent_row['time'] == '2025-01-18 16:04:37':
-    print("Les deux lignes")
-    print(sent_row)
-    print(receive_row)
-    print(f"{sent_row['time']} == {receive_row['time']}")
-    print("transaction_type : ", transaction_type)
-    print("fees_data['Fee Currency'] : ", fees_data['Fee Currency'])
-    print("fees_data['Fee Row'] : ", fees_data['Fee Row'])
+    # print("Les deux lignes")
+    # print(sent_row)
+    # print(receive_row)
+    # print(f"{sent_row['time']} == {receive_row['time']}")
+    # print("transaction_type : ", transaction_type)
+    # print("fees_data['Fee Currency'] : ", fees_data['Fee Currency'])
+    # print("fees_data['Fee Row'] : ", fees_data['Fee Row'])
 
 
 
@@ -143,14 +143,12 @@ def Create_one_row_from_two(same_refid_df) :
     receive_row = same_refid_df.loc[same_refid_df['type'] == 'receive'].to_dict(orient='records')[0]
 
 
-        
-
     # # Identify transaction type
     transaction_type = Identify_transaction_type(sent_row, receive_row)
 
 
     fees_data = Identify_fees(sent_row, receive_row)
-    print(" --------- Start compute ----------")
+    # print(" --------- Start compute ----------")
     sent_row, receive_row = Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction_type)
                 # same_refid_df.at[index, "amount"] = np.abs(row["amount"])
     # print("Date' : ", sent_row['time'])
@@ -189,7 +187,6 @@ def Create_one_row_from_two(same_refid_df) :
     return new_row
 
 
-
 def Convert_two_trade_row(same_refid_df):
 
     for index, row in same_refid_df.iterrows() : 
@@ -204,6 +201,7 @@ def Convert_two_trade_row(same_refid_df):
     new_row = Create_one_row_from_two(same_refid_df)
 
     return new_row
+
 
 def Convert_reward_stack_or_other(row):
     """
@@ -260,6 +258,7 @@ def Convert_kraken_withdrawal(row):
         'Fee Net Worth' : ''
     })
     return new_row
+
 
 def Convert_kraken_deposit(row):
     """
