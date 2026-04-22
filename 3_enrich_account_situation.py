@@ -4,42 +4,24 @@ from datetime import datetime, timedelta
 import pipeline_fct
 import os
 
+from pipeline_fct import trade_date_to_cap_unix_nanoseconds
+from pipeline_fct import get_kraken_price_files_name
+from pipeline_fct import load_prices_file_as_df
+from pipeline_fct import get_average_price_from_kraken_file
 
-# def get_trade_info(selected_row):
-#     timestamp = selected_row['timestamp']
-#     price = selected_row['price']
-#     unknown = selected_row['unknown']
-#     return timestamp, price, unknown
+# def get_average_price_price_db(df, time_col, quantity_col, start_time, end_time):
+#     masque = (df[time_col] >= start_time) & (df[time_col] <= end_time)
+#     df_filtre = df.loc[masque]
 
+#     # Calcul de la moyenne pondéré
+#     produit_somme = (df_filtre[quantity_col] * df_filtre['price']).sum()
+#     quantite_somme = df_filtre[quantity_col].sum()
 
-def get_average_price_price_db(df, time_col, quantity_col, start_time, end_time):
-    masque = (df[time_col] >= start_time) & (df[time_col] <= end_time)
-    df_filtre = df.loc[masque]
-
-    # Calcul de la moyenne pondéré
-    produit_somme = (df_filtre[quantity_col] * df_filtre['price']).sum()
-    quantite_somme = df_filtre[quantity_col].sum()
-
-    if quantite_somme == 0:
-        return None  
+#     if quantite_somme == 0:
+#         return None  
     
-    average_price = produit_somme / quantite_somme
-    return average_price
-
-
-
-def date_time_to_unix_nanoseconds(date_time_str, format_str='%Y-%m-%d %H:%M:%S'):
-    """
-    Convertit une date et une heure en nanosecondes Unix.
-    
-    Exemple d'utilisation
-    date_time_str = '2023-10-27 15:30:00'
-    unix_nanoseconds = date_time_to_unix_nanoseconds(date_time_str)
-    print(f'Nanosecondes Unix : {unix_nanoseconds}')
-    """
-    time_struct = time.strptime(date_time_str, format_str)
-    unix_seconds = int(time.mktime(time_struct))
-    return unix_seconds
+#     average_price = produit_somme / quantite_somme
+#     return average_price
 
 
 def add_price_columns(enriched_situation, asdf_crypto_used):
@@ -50,24 +32,7 @@ def add_price_columns(enriched_situation, asdf_crypto_used):
     return enriched_situation
     
 
-def get_start_and_end_date_of_the_day(date) :  
-    date_obj = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-    day_start = str(date_obj.replace(hour=0, minute=0, second=0))
-    day_end = str(date_obj.replace(hour=23, minute=59, second=59))
-    return day_start, day_end
-
-
-def trade_date_to_cap_unix_nanoseconds(trade_date):
-
-    day_start, day_end = get_start_and_end_date_of_the_day(trade_date)
-    # Convertir en timstamp format utilisé par le fichier .csv des prix
-    day_start_unix_nanoseconds = date_time_to_unix_nanoseconds(day_start)
-    day_end_unix_nanoseconds = date_time_to_unix_nanoseconds(day_end)
-
-    return day_start_unix_nanoseconds, day_end_unix_nanoseconds
-
-
-def export(enriched_situation, enriched_situation_path):
+def export_es_and_price_db(enriched_situation, enriched_situation_path):
     # Export as enriched_situation.csv
     enriched_situation.to_csv(enriched_situation_path, index=False)
 
@@ -77,145 +42,126 @@ def export(enriched_situation, enriched_situation_path):
     enriched_situation[columns_for_price_db].to_csv('Data/3_enriched_as/price_db.csv', index=False)
 
 
-def get_average_price_from_kraken_file(df_filtre):
-
-    time_col='timestamp'
-    quantity_col='quantity'
+def export_price_db(price_db):
+    price_db.to_csv('Data/3_enriched_as/price_db.csv', index=False)
 
 
-    # print(f"df_filtre len : {len(df_filtre)}")
+def find_average_price_with_kraken_file(trade_date, crypto):
 
-    # Calcul de la moyenne pondéré
-    produit_somme = (df_filtre[quantity_col] * df_filtre['price']).sum()
-    quantite_somme = df_filtre[quantity_col].sum()
-
-    if quantite_somme == 0:
-        return None  
-    
-    average_price = produit_somme / quantite_somme
-    return average_price
-
-
-def load_prices_file_as_df(crypto_prices_files, crypto):
-    filename = str(crypto_prices_files[crypto])
-
-    kraken_data_price = f'D:/Data_crypto_tax_calculator/Kraken_History_Update_merged/{filename}.csv'
-    price_to_use = pd.DataFrame()
-    print(f"{kraken_data_price},  existe : ", os.path.exists(kraken_data_price))
-
-    if os.path.exists(kraken_data_price):
-        try:
-            price_to_use = pd.read_csv(kraken_data_price, names=["timestamp","price","quantity"], sep=',')
-            print(f"Le fichier '{kraken_data_price}' a été chargé avec succès.")
-        except FileNotFoundError:
-            # Cette exception ne devrait pas se produire car on a déjà vérifié l'existence du fichier
-            print(f"Erreur inattendue : Le fichier '{kraken_data_price}' n'a pas été trouvé.")
-        except Exception as e:
-            print(f"Une erreur s'est produite lors de la lecture du fichier '{kraken_data_price}': {e}")
-    else:
-        print(f"Le fichier '{kraken_data_price}' n'existe pas. Impossible de le lire.")
-
-    return price_to_use
-
-
-def find_average_price_with_kraken_file(kraken_prices_file_df, trade_date, crypto):
-
+    global kraken_prices_file_df
 
     if len(kraken_prices_file_df) == 0 :
-        # print("On sort de la boucle pour cette crypto et on passe à la suivante")
-        # print(f"les prix resteront à chaine vide pour {crypto} ")
-        average_price = 0
-        return average_price, "break"
+        print("kraken_prices_file_df est vide, on le charge")
+        crypto_prices_files = get_kraken_price_files_name()
+        filename = str(crypto_prices_files[crypto])
+        kraken_prices_file_df = load_prices_file_as_df(filename) 
+        print("kraken_prices_file_df est chargé")
 
-    day_start_unix_nanoseconds, day_end_unix_nanoseconds = trade_date_to_cap_unix_nanoseconds(trade_date)
-    masque = (kraken_prices_file_df['timestamp'] >= day_start_unix_nanoseconds) & (kraken_prices_file_df['timestamp'] <= day_end_unix_nanoseconds)
-    df_filtre = kraken_prices_file_df.loc[masque]
-    if len(df_filtre) == 0 :
-        # print(f"Pas de data de prix pour {crypto} date : {trade_date} dans le fichier data kraken")
-        average_price = 0
-        return average_price, "null"
+    if len(kraken_prices_file_df) == 0 : 
+        print("Taille de kraken_prices_file_df est 0, le fichier n'a pas pu être lu")
+        average_price = -2
+        return average_price
     else : 
-        # print(f"Presence de Data de prix pour {crypto} date : {trade_date} dans le fichier data kraken")
-        
-        average_price = get_average_price_from_kraken_file(df_filtre)
-        # print(f"get average price for {crypto} {trade_date} : {average_price}")
-        return average_price, "ok"
+        # print("Taille de kraken_prices_file_df != 0, Filtrage de kraken_prices_file_df")
+        day_start_unix_nanoseconds, day_end_unix_nanoseconds = trade_date_to_cap_unix_nanoseconds(trade_date)
+        masque = (kraken_prices_file_df['timestamp'] >= day_start_unix_nanoseconds) & (kraken_prices_file_df['timestamp'] <= day_end_unix_nanoseconds)
+        df_filtre = kraken_prices_file_df.loc[masque]
 
+    if len(df_filtre) == 0 :
+        print("Taile de kraken_prices_file_df filtré est 0 après chargement (On a pas de prix pour la période de temps voulu)")
+        average_price = -1
+        return average_price
+    else : 
+        average_price = get_average_price_from_kraken_file(df_filtre)
+        return average_price
+    
 
 def main(enriched_situation_path, account_situation_path):
+    """
+    Il faut
+    ok : Une fonction qui charge price_db
+    ok : Le loop sur crypto puis row_index
+    ok : On test si on trouve le prix à trade_date dans price_db
+    ok : Si ce n'est pas possible on charge kraken_prices_df, sauf s'il est déjà chargé
+    ok :    On prends le prix dans kraken_prices_df
+    ok : On renvoi le prix
+    On inscrit le prix dans price_db si price_db ne l'a pas déjà ou a un prix différent de kraken_file
+    """
+
     """
     Start from account_situation.csv to produce enriched_situation.csv
     For each column crypto in account_situation.csv, enriched_situation.csv adds a ccurency_price column
     """
 
     crypto_used_list = pipeline_fct.get_crypto_list_from_all_trades()
-    crypto_prices_files = pipeline_fct.get_kraken_price_files_name()
-
+    
 
     # Get and set df
     asdf = pd.read_csv(account_situation_path, sep=',')
     enriched_situation = asdf.copy(deep=True)
     enriched_situation = add_price_columns(enriched_situation, crypto_used_list)
 
+
     price_db = f'Data/3_enriched_as/price_db.csv'
+    print("avant if")
+    if not os.path.exists(price_db):
+        print("pendant if")
+        print(f"crypto_used_list : {crypto_used_list}")
+        col_list = [col_name + '_price' for col_name in crypto_used_list]
+        col_list.append('Date')
+        print(f"col_list : {col_list}")
+        print(col_list)
+        df = pd.DataFrame(columns=col_list)
+        
+        print(df.head())
+        df.to_csv('Data/3_enriched_as/price_db.csv', index=False)
+
+    print("apres if")
     price_db_df = pd.read_csv(price_db, sep=',')
 
-    kraken_prices_file_df = pd.DataFrame()
+    global kraken_prices_file_df
 
 
     # # Fill price columns with average price for the day
     for crypto in crypto_used_list :
+    # for crypto in ['BTC'] :
+        kraken_prices_file_df = pd.DataFrame()
+        
         print(f"recherche des prix de {crypto}")
-        # for row_index in range(1, 2) :   
         for row_index in range(1, len(enriched_situation)):
-            # print(f"recherche des prix de {crypto}, ligne {row_index}")  
+
+            print(f"***********{crypto} : {row_index} / {len(enriched_situation)} ***********")
             trade_date = enriched_situation.loc[row_index, "Date"]
-            # print(f"trade_date : {trade_date}")  
-            status = "null"
+            # print(f"recherche du prix de {crypto}, ligne {row_index}, date {trade_date}")   
+
+            price_found = False
+            price_found_in_kraken_file = False
+            
+            # Try to find the price in price_db
             lignes_trouvees_in_price_db = price_db_df[price_db_df['Date'] == trade_date]
             if len(lignes_trouvees_in_price_db) > 0:
-                # print(f"On a trouvé une ligne dans price_db pour cette date : {trade_date}")
-                if lignes_trouvees_in_price_db[f"{crypto}_price"].isnull().any() :
-                    # print(f"Cellule trouvé dans la ligne pour {crypto}_price : {lignes_trouvees_in_price_db[f"{crypto}_price"]}")
-                    # Si le prix trouvé dans price_db_df est inexploitable, on tente dans kraken file
-                    if len(kraken_prices_file_df)  > 0 :  # On cherche le prix dans le fichier kraken, qui a déjà été ouvert
-                        average_price, status = find_average_price_with_kraken_file(kraken_prices_file_df, trade_date, crypto)
-                    else : 
-                        # print(f"chargement du fichier des prix kreaken pour {crypto}")
-                        kraken_prices_file_df = load_prices_file_as_df(crypto_prices_files, crypto) 
-                        if len(kraken_prices_file_df)  > 0 :
-                            average_price, status = find_average_price_with_kraken_file(kraken_prices_file_df, trade_date, crypto)
-                    
-                else : 
-                    # print(f"Cellule trouvé dans la ligne pour {crypto}_price : {lignes_trouvees_in_price_db[f'{crypto}_price']}")
-                    average_price = lignes_trouvees_in_price_db[f"{crypto}_price"]
-                    # print(f"Prix trouvé dans price_db_df pour {crypto} - {trade_date} soit {average_price} eur")
+                price_from_price_db = lignes_trouvees_in_price_db[f'{crypto}_price'].iloc[0]
+                if not pd.isna(price_from_price_db) : 
+                    average_price = price_from_price_db
+                    price_found = True
 
-            else :
-                # print(f"pas de lignes trouvé à la date {trade_date} pour {crypto} dans price_db_df ")
-                # print("recherche dans le fichier kraken")
+            # Try to find the price in kraken file
+            if price_found == False : 
+                average_price = find_average_price_with_kraken_file(trade_date, crypto)
+                if average_price >= 0 :
+                    price_found = True
+                    price_found_in_kraken_file = True
 
-                average_price, status = find_average_price_with_kraken_file(kraken_prices_file_df, trade_date, crypto)
-
-            # print(f"status de la ligne : {status}")
-            if status == "ok":
-                # print(f"La variable '{average_price}' est un nombre")
-                # print(f"old average price in enriched situation :  {enriched_situation.loc[row_index, f"{crypto}_price"]}")
-                # print(f"nouveau prix moyen pour {crypto} - {trade_date} : {average_price}")
+            if price_found == True :
+                # Cool, write the price in enriched situation and then save it in price_db for next use
                 enriched_situation.loc[row_index, f"{crypto}_price"] = average_price
-
-
-            elif status == 'break':
-                break
-            # elif status == 'null':
-            #     print(f"null pour {crypto} : {trade_date}")
-            elif status == "unknown case" :
-                print("unknown case !!!!!")  
-
-        kraken_prices_file_df = pd.DataFrame()
+                if price_found_in_kraken_file : 
+                    price_db_df.loc[price_db_df['Date'] == trade_date, f"{crypto}_price"] = average_price
             
-    print(enriched_situation.head())
-    export(enriched_situation, enriched_situation_path)
+            if price_found == False :
+                print("prix non trouvé")
+        export_price_db(price_db_df)
+    export_es_and_price_db(enriched_situation, enriched_situation_path)
 
 
 
@@ -223,13 +169,6 @@ def main(enriched_situation_path, account_situation_path):
 enriched_situation_path = 'Data/3_enriched_as/as_with_crypto_prices.csv'
 account_situation_path = 'Data/2_account_situation/account_situation.csv'
 
-
+kraken_prices_file_df = pd.DataFrame()
 main(enriched_situation_path, account_situation_path)
 
-
-
-
-        # if crypto in ['CRO']: 
-        #     print("cro")
-        #     enriched_situation[f"{crypto}_price"] = ''
-        #     continue  

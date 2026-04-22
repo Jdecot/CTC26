@@ -1,3 +1,9 @@
+# Custom Ignore
+Data/
+Doc/
+test_script/
+trash/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

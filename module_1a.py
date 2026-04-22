@@ -88,8 +88,7 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
     # print("transaction_type : ", transaction_type)
     # print("fees_data['Fee Currency'] : ", fees_data['Fee Currency'])
     # print("fees_data['Fee Row'] : ", fees_data['Fee Row'])
-
-
+    # print("fees_data : ", fees_data)
 
     # we identified transaction as : trade or buy or sell
     # we know the row that payd the fees 
@@ -124,6 +123,7 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
         receive_row['amount'] += fees_data['Fee Amount']
         # print(sent_row['amount'])
 
+
     else : 
         print("error sent row : ", sent_row)
         print("error receive_row : ", receive_row)
@@ -141,7 +141,6 @@ def Create_one_row_from_two(same_refid_df) :
 
     sent_row = same_refid_df.loc[same_refid_df['type'] == 'spend'].to_dict(orient='records')[0]
     receive_row = same_refid_df.loc[same_refid_df['type'] == 'receive'].to_dict(orient='records')[0]
-
 
     # # Identify transaction type
     transaction_type = Identify_transaction_type(sent_row, receive_row)
@@ -212,14 +211,47 @@ def Convert_reward_stack_or_other(row):
     """
 
     convert_asset_dict = {
-        'ADA.S' : 'ADA',
-        'ADA' : 'ADA',
-        'MATIC04.S' : 'MATIC',
-        'MATIC.S' : 'MATIC',
-        'MATIC' : 'MATIC',
-        'SOL03.S' : 'SOL',
-        'SOL.S' : 'SOL',
-        'SOL' : 'SOL'
+    'ADA.S' : 'ADA',
+    'ADA' : 'ADA',
+    'MATIC04.S' : 'MATIC',
+    'MATIC.S' : 'MATIC',
+    'MATIC' : 'MATIC',
+    'SOL03.S' : 'SOL',
+    'SOL.S' : 'SOL',
+    'SOL' : 'SOL',
+    # Crypto-monnaies principales
+    "XXBT": "BTC",
+    "XXRP": "XRP",
+    "XETH": "ETH",
+    "XXDG": "DOGE",
+    # Variantes de staking (B=bonded, F=flexible) → currency de base
+    "XXBT.B": "BTC",
+    "XXBT.F": "BTC",
+    "XETH.B": "ETH",
+    "XETH.F": "ETH",
+    # Fiats
+    "ZEUR": "EUR",
+    "ZUSD": "USD",
+    # Margin
+    "XBT.M": "BTC",
+    # Variantes numérotées (staking ancien/nouveau)
+    "SOL03": "SOL",
+    "MATIC04": "MATIC",
+    # ETH2 staking (avant et après le merge)
+    "ETH2": "ETH",
+    "ETH2.S": "ETH",
+    "TRX":"TRX",
+    "INJ.F": "INJ",
+    "SOL.F": "SOL",
+    'TRX.F': 'TRX',
+    'ADA.F': 'ADA',
+    'EIGEN': 'EIGEN',
+    'USDC' : 'USDC',
+    'USDC.F' : 'USDC',
+    'USDC.M' : 'USDC',
+    'USDT.F': 'USDT',
+    'INJ' : 'INJ',
+    'INJ.B' : 'INJ'
     }
 
     # Compute the real value received, fee is a negative value so we add

@@ -67,17 +67,17 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
     # If transaction is taxable or used to compute "prix total d'acquisition du portefeuille",
     # then memorise how much has been received or sent in globality since the first trade
     if row_asdf_last_row["Type"] == 'buy' and Sent_Currency == 'EUR':
-        row_asdf_last_row['EUR_spent'] = row_asdf_last_row['EUR_spent'] + float(row_ready_for_ingest['Sent Amount'])
+        # row_asdf_last_row['EUR_spent'] = row_asdf_last_row['EUR_spent'] + float(row_ready_for_ingest['Sent Amount'])
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Sent Amount'])
     if row_asdf_last_row["Type"] == 'buy' and Sent_Currency == 'USD':
-        row_asdf_last_row['EUR_spent'] = row_asdf_last_row['EUR_spent'] + float(row_ready_for_ingest['Sent Amount'])*0.9222
+        # row_asdf_last_row['EUR_spent'] = row_asdf_last_row['EUR_spent'] + float(row_ready_for_ingest['Sent Amount'])*0.9222
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Sent Amount'])*0.9222
 
     if row_asdf_last_row["Type"] == 'sell' and Received_Currency == 'EUR':
-        row_asdf_last_row['EUR_received'] = row_asdf_last_row['EUR_received'] + float(row_ready_for_ingest['Received Amount'])
+        # row_asdf_last_row['EUR_received'] = row_asdf_last_row['EUR_received'] + float(row_ready_for_ingest['Received Amount'])
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Received Amount'])
     if row_asdf_last_row["Type"] == 'sell' and Received_Currency == 'USD':
-        row_asdf_last_row['EUR_received'] = row_asdf_last_row['EUR_received'] + float(row_ready_for_ingest['Received Amount'])*0.9222
+        # row_asdf_last_row['EUR_received'] = row_asdf_last_row['EUR_received'] + float(row_ready_for_ingest['Received Amount'])*0.9222
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Received Amount'])*0.9222
 
 

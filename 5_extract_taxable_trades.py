@@ -4,11 +4,52 @@ from datetime import datetime, timedelta
 import pipeline_fct
 
 
+def formater_date(date_str):
+    from datetime import datetime
+    if pd.isna(date_str)  : 
+        return 
+    else : 
+        date_obj = datetime.strptime(date_str.split()[0], '%Y-%m-%d')
+        return date_obj.strftime('%d/%m/%Y')
+    
+
+def roundColumns(df, col_list_to_round):
+
+    # Itérer sur la liste des colonnes et arrondir
+    for col_name in col_list_to_round:
+        
+        if df[col_name].dtype == 'float64':  # Vérifier si la colonne est de type float
+            print("round : ", col_name)
+            # df[col_name] = df[col_name].round(1).astype(int)
+            df[col_name] = df[col_name].apply(lambda x: round(x, 0))
+    return df
+
+
+def lastModification(df): 
+
+    # Supprimer la première ligne qui est vide
+    df = df[1:]
+
+    # Convertir le format de date pour ingestion par le site des impôts
+    df["Date"] = df["Date"].apply(formater_date)
+
+    col_list_to_round =  ["wallet_value_eur_m1", "Money_movement", "PTA", "wallet_value_eur", "plus_value", "fraction_capital_initial"]
+    df = roundColumns(df, col_list_to_round)
+    # Liste des colonnes à mettre au début (dans l'ordre souhaité)
+    colonnes_debut = ["Date", "wallet_value_eur_m1", "Money_movement", "PTA",  "plus_value", "Platform", "Type", "fraction_capital_initial", "wallet_value_eur"]
+    # colonnes_restantes = [col for col in df.columns if col not in colonnes_debut]
+    # nouvel_ordre_colonnes = colonnes_debut + colonnes_restantes
+    new_df = df[colonnes_debut]
+
+    return new_df
+
 def main(computed_situation_path, taxable_trades_situation_path):
     """
     """
     computed_situation = pd.read_csv(computed_situation_path, sep=',')
     
+    computed_situation = lastModification(computed_situation.copy())
+
     # taxable_trades_situation = computed_situation[(computed_situation['Type'] == 'sell') | (computed_situation['Type'] == 'buy')]
     taxable_trades_situation = computed_situation[(computed_situation['Type'] == 'sell')]
     # taxable_trades_situation = computed_situation.copy(deep=True)
@@ -18,10 +59,12 @@ def main(computed_situation_path, taxable_trades_situation_path):
     taxable_trades_situation_filtered = taxable_trades_situation
 
     # taxable_trades_situation_filtered.to_csv(taxable_trades_situation_path, index=False)
-    taxable_trades_situation_filtered.to_excel(taxable_trades_situation_path, sheet_name='NomFeuille', index=False)
+    taxable_trades_situation_filtered.to_csv(taxable_trades_situation_path + ".csv", index=False)
+    taxable_trades_situation_filtered.to_excel(taxable_trades_situation_path + ".xlsx", sheet_name='NomFeuille', index=False)
 
 # File path
-computed_situation_path = 'Data/4_computed_as/computed_situation.csv'
-taxable_trades_situation_path = 'Data/5_taxable_trades_as/taxable_trades.xlsx'
+computed_situation_path = 'Data/4_computed_as/computed_pv.csv'
+taxable_trades_situation_path = 'Data/5_taxable_trades_as/taxable_trades'
+
 
 main(computed_situation_path, taxable_trades_situation_path)
