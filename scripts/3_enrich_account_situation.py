@@ -1,6 +1,4 @@
 import pandas as pd
-import time
-from datetime import datetime, timedelta
 import pipeline_fct
 import os
 import config
@@ -9,21 +7,6 @@ from pipeline_fct import trade_date_to_cap_unix_nanoseconds
 from pipeline_fct import get_kraken_price_files_name
 from pipeline_fct import load_prices_file_as_df
 from pipeline_fct import get_average_price_from_kraken_file
-
-# def get_average_price_price_db(df, time_col, quantity_col, start_time, end_time):
-#     masque = (df[time_col] >= start_time) & (df[time_col] <= end_time)
-#     df_filtre = df.loc[masque]
-
-#     # Calcul de la moyenne pondéré
-#     produit_somme = (df_filtre[quantity_col] * df_filtre['price']).sum()
-#     quantite_somme = df_filtre[quantity_col].sum()
-
-#     if quantite_somme == 0:
-#         return None  
-    
-#     average_price = produit_somme / quantite_somme
-#     return average_price
-
 
 def add_price_columns(enriched_situation, asdf_crypto_used):
     # Add price columns
@@ -63,7 +46,6 @@ def find_average_price_with_kraken_file(trade_date, crypto):
         average_price = -2
         return average_price
     else : 
-        # print("Taille de kraken_prices_file_df != 0, Filtrage de kraken_prices_file_df")
         day_start_unix_nanoseconds, day_end_unix_nanoseconds = trade_date_to_cap_unix_nanoseconds(trade_date)
         masque = (kraken_prices_file_df['timestamp'] >= day_start_unix_nanoseconds) & (kraken_prices_file_df['timestamp'] <= day_end_unix_nanoseconds)
         df_filtre = kraken_prices_file_df.loc[masque]
@@ -125,16 +107,12 @@ def main(enriched_situation_path, account_situation_path):
 
     # # Fill price columns with average price for the day
     for crypto in crypto_used_list :
-    # for crypto in ['BTC'] :
         kraken_prices_file_df = pd.DataFrame()
         
         print(f"recherche des prix de {crypto}")
         for row_index in range(1, len(enriched_situation)):
 
-            print(f"***********{crypto} : {row_index} / {len(enriched_situation)} ***********")
             trade_date = enriched_situation.loc[row_index, "Date"]
-            # print(f"recherche du prix de {crypto}, ligne {row_index}, date {trade_date}")   
-
             price_found = False
             price_found_in_kraken_file = False
             

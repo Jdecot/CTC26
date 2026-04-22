@@ -1,6 +1,4 @@
 import pandas as pd
-import time
-from datetime import datetime, timedelta
 import pipeline_fct
 import config
 

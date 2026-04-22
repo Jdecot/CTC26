@@ -14,11 +14,7 @@ scripts = [
     "1a_kraken_convert.py",
     "1b_crypto_com_convert_date.py", 
     "1c_merge_and_sort_all_trades.py",
-    "2_create_account_situation.py",
-    # "3_enrich_account_situation.py",
-    # "4a_compute_crypto_positions.py",
-    # "4b_compute_pv.py",
-    # "5_extract_taxable_trades.py"
+    "2_create_account_situation.py"
 ]
 
 
@@ -99,7 +95,7 @@ def export_all_csv_to_excel():
                     df = pd.read_csv(csv_path, sep=',')
                     df.to_excel(excel_path, index=False)
                     csv_count += 1
-                    print(f"  ✓ {rel_path} -> {excel_path.relative_to(BASE_DIR)}")
+                    # print(f"  ✓ {rel_path} -> {excel_path.relative_to(BASE_DIR)}")
                 except Exception as e:
                     print(f"  ✗ Erreur lors de la conversion de {rel_path}: {e}")
     

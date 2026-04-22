@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import config
 from module_1a import *
 
@@ -41,40 +40,30 @@ def treat_row_v2(ledger_df, row):
     # It's necessary to merge them. The two lines shares the same refid.
     elif transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id and row['subtype'] != 'dustsweeping':
         # Find the two row with refid and create a df with only them
-        # print("************ Row spend and receive ************")
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
         new_row = Create_one_row_from_two(same_refid_df)
         treated_ref_id.append(refid)
         treated_lines["send_and_receive"] += 1
-        # print(f"******* date : {new_row['Date']} *************")
-        # print(f"{new_row['Type']} : reçu {new_row['Received Amount']} {new_row['Received Currency']}, sent {new_row['Sent Amount']} {new_row['Sent Currency']} ")
-        # print(f"Frais de transaction : {new_row['Fee Amount']} {new_row['Fee Currency']} ")
-        # print("Treated as spend receive")
 
     elif transaction_kind in ['spend', 'receive'] and refid in treated_ref_id and row['subtype'] != 'dustsweeping':
         treated_lines["send_and_receive"] += 1
 
     elif row['subtype'] == 'dustsweeping' :
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
-        # print("dustsweeping same ref if : ", len(same_refid_df))
         if refid not in treated_ref_id :
-            # new_rows = Convert_dustsweeping_into_several_rows(same_refid_df)
+            new_row = Convert_dustsweeping_into_several_rows(same_refid_df)
             treated_ref_id.append(refid)
         treated_lines["dustsweeping"] += 1
 
     elif transaction_kind == 'staking' :
         new_row = Convert_reward_stack_or_other(row)
         treated_lines["staking"] += 1
-        # print("Treated as staking")
 
     elif transaction_kind == 'trade' and refid not in treated_ref_id :
-        # print("************ Row trade ************")
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
-        # print(same_refid_df)
         new_row = Convert_two_trade_row(same_refid_df)
         treated_lines["trade"] += 1
         treated_ref_id.append(refid)
-        # print(f"new row : {new_row['Date']}")
 
     elif transaction_kind == 'trade' and refid in treated_ref_id :
         treated_lines["trade"] += 1
@@ -96,27 +85,17 @@ def export_deposit_withdraw_csv(df):
     filtered_df.to_csv(depo_width_filepath, sep=',', index=False)
 
 
-def filter_on_specifiq_dates(ledger_df): 
-    # Filter only certain dates to test 
-    dates_cible = ["2023-12-14 11:03:44", "2024-04-17 21:25:49", "2024-04-17 21:26:17", "2024-03-19 23:48:06"]
-    ledger_df = ledger_df.loc[ledger_df['time'].isin(dates_cible)]
-    return ledger_df
-
-
 def convert_columns_to_positive_values(df, cols_to_modify):
     # ---------- Convert columns to positive values (because no negative values allowed)
-
-    # Convert to float 
     def format_value(x):
         if pd.isna(x):
-            return ""  # Replace NaN with empty string
+            return ""
         else:
-            return f"{x:.10f}" 
+            return f"{x:.10f}"
         
     pd.set_option('display.float_format', '{:.10f}'.format)
     for column_to_modify in cols_to_modify :
-        df[column_to_modify] = pd.to_numeric(df[column_to_modify], errors='coerce')
-        df[column_to_modify] = np.abs(df[column_to_modify])
+        df[column_to_modify] = pd.to_numeric(df[column_to_modify], errors='coerce').abs()
         df[column_to_modify] = df[column_to_modify].apply(format_value)
     
     return df
@@ -148,13 +127,10 @@ def convert_ledger_to_rfi(ledger_df):
     }
 
     print(f"nombre de lignes dans ledger : {len(ledger_df)}")
-    filtered_df = filter_on_specifiq_dates(ledger_df)
-
     
     # Loop, treat each ledger row and add result to RFI
     for index in ledger_df.index:
         row = ledger_df.loc[index]
-        # rfi_df, treated_ref_id, treated_lines = treat_row(ledger_df, rfi_df, row, index, treated_ref_id, treated_lines)
         new_rows = treat_row_v2(ledger_df, row)
         if new_rows is not None:
             if isinstance(new_rows, list):

@@ -8,8 +8,7 @@ import time
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
-from decimal import Decimal, InvalidOperation
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 
 import requests
 from dotenv import load_dotenv
@@ -40,39 +39,6 @@ def _parse_date_to_unix(date_str: str) -> int:
     return int(dt.timestamp())
 
 
-def _get_last_transaction_timestamp(output_path: Path) -> int:
-    """
-    Lit le fichier CSV existant et retourne le timestamp Unix de la dernière transaction.
-    Si le fichier n'existe pas ou est vide, retourne 0.
-    """
-    if not output_path.exists():
-        return 0
-    
-    max_timestamp = 0
-    try:
-        with output_path.open("r", encoding="utf-8", newline="") as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                try:
-                    ts = float(row.get("timestamp_unix", "0"))
-                    if ts > max_timestamp:
-                        max_timestamp = ts
-                except (ValueError, TypeError):
-                    pass
-    except Exception as e:
-        print(f"  Impossible de lire le fichier existant: {e}. On repart de zéro.")
-        return 0
-    
-    return int(max_timestamp)
-
-
-def _to_decimal(value: Any) -> Decimal:
-    try:
-        return Decimal(str(value))
-    except (InvalidOperation, ValueError):
-        return Decimal("0")
-
-
 def load_kraken_config(config_path: Path = DEFAULT_CONFIG_PATH) -> Dict[str, str]:
     path = Path(config_path)
     if not path.is_absolute():
@@ -95,26 +61,6 @@ def load_kraken_config(config_path: Path = DEFAULT_CONFIG_PATH) -> Dict[str, str
         "end_date": str(content["kraken_end_date"]).strip(),
         "output_path": str(output_path),
     }
-
-
-def _get_existing_transaction_ids(output_path: Path) -> Set[str]:
-    """
-    Lit le fichier CSV existant et retourne l'ensemble des transaction_id déjà collectés.
-    Permet de reprendre la collecte là où on s'est arrêté.
-    """
-    existing_ids: Set[str] = set()
-    if output_path.exists():
-        try:
-            with output_path.open("r", encoding="utf-8", newline="") as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    tid = row.get("transaction_id", "")
-                    if tid:
-                        existing_ids.add(tid)
-            print(f"  {len(existing_ids)} transactions déjà collectées dans le fichier existant.")
-        except Exception as e:
-            print(f"  Impossible de lire le fichier existant: {e}. On repart de zéro.")
-    return existing_ids
 
 
 def _fetch_ledger_page(api_key: str, api_secret: str, start: int, end: int, ofs: int = 0) -> Dict[str, Any]:

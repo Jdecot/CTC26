@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import pipeline_fct
 import config
 
@@ -24,14 +23,12 @@ def add_amount_to_curreny_in_row(row, currency, amount_to_add):
     current_ammount = row[currency]
     new_amount = current_ammount + amount_to_add
     row[currency] = new_amount
-    # print(f"Add amount : {current_ammount}{currency}")
     return row
 
 def remove_amount_to_currency_in_row(row, currency, amount_to_remove):
     current_ammount = row[currency]
     new_amount = current_ammount - amount_to_remove
     row[currency] = new_amount
-    # print(f"Remove amount : {current_ammount}{currency}")
     return row
 
 def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row):
@@ -68,17 +65,13 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
     # If transaction is taxable or used to compute "prix total d'acquisition du portefeuille",
     # then memorise how much has been received or sent in globality since the first trade
     if row_asdf_last_row["Type"] == 'buy' and Sent_Currency == 'EUR':
-        # row_asdf_last_row['EUR_spent'] = row_asdf_last_row['EUR_spent'] + float(row_ready_for_ingest['Sent Amount'])
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Sent Amount'])
     if row_asdf_last_row["Type"] == 'buy' and Sent_Currency == 'USD':
-        # row_asdf_last_row['EUR_spent'] = row_asdf_last_row['EUR_spent'] + float(row_ready_for_ingest['Sent Amount'])*0.9222
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Sent Amount'])*0.9222
 
     if row_asdf_last_row["Type"] == 'sell' and Received_Currency == 'EUR':
-        # row_asdf_last_row['EUR_received'] = row_asdf_last_row['EUR_received'] + float(row_ready_for_ingest['Received Amount'])
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Received Amount'])
     if row_asdf_last_row["Type"] == 'sell' and Received_Currency == 'USD':
-        # row_asdf_last_row['EUR_received'] = row_asdf_last_row['EUR_received'] + float(row_ready_for_ingest['Received Amount'])*0.9222
         row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Received Amount'])*0.9222
 
 
@@ -131,7 +124,6 @@ def main(ready_for_ingest_filepath,result_filepath):
             else : 
                 asdf_last_row = asdf.iloc[-1].copy()
                 new_row = add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row)
-                # print('new_row : ', new_row)
                 asdf.loc[index+1] = new_row
 
     asdf.to_csv(result_filepath, index=False)

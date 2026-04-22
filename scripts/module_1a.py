@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 
 def Identify_transaction_type(sent_row, receive_row):
@@ -80,21 +79,6 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
     Vente en euros, fees en euros : Enlever les fees au received amount, si c'est la ligne receive qui paye les fees
     """
 
-    # if sent_row['time'] == '2025-01-18 16:04:37':
-    # print("Les deux lignes")
-    # print(sent_row)
-    # print(receive_row)
-    # print(f"{sent_row['time']} == {receive_row['time']}")
-    # print("transaction_type : ", transaction_type)
-    # print("fees_data['Fee Currency'] : ", fees_data['Fee Currency'])
-    # print("fees_data['Fee Row'] : ", fees_data['Fee Row'])
-    # print("fees_data : ", fees_data)
-
-    # we identified transaction as : trade or buy or sell
-    # we know the row that payd the fees 
-    # we identified the sent row and the receive row, even in 'trade' case (according to source dataset)
-    # everything is ready
-
     # Case when buy crypto, fees in crypto, remove fees from received amount (fees has been convert to positive value) to get total received amount
     if (transaction_type == 'buy') & (fees_data['Fee Currency'] != 'EUR') & (fees_data['Fee Row'] == 'receive_row'):
         receive_row['amount'] += fees_data['Fee Amount']
@@ -105,23 +89,15 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
 
     # Case when sell crypto, fees in euros, remove fees from received amount (fees has been convert to positive value) to get total received amount
     elif (transaction_type == 'sell') & (fees_data['Fee Currency'] == 'EUR') & (fees_data['Fee Row'] == 'receive_row') :
-        ghost = 0
+        pass
 
     # Case when trade crypto for another one, fees in the sent row, add fees to sent amount to get total amount sent
     elif (transaction_type == 'trade') & (fees_data['Fee Row'] == 'sent_row') :
-        # print("debug")
-        # print(sent_row['amount'])
-        # print(fees_data['Fee Amount'])
         sent_row['amount'] += fees_data['Fee Amount']
-        # print(sent_row['amount'])
     
     # Case when trade crypto for another one, fees in the receive row, remove fees from received amount to get total amount received
     elif (transaction_type == 'trade') & (fees_data['Fee Row'] == 'receive_row') :
-        # print("debug")
-        # print(sent_row['amount'])
-        # print(fees_data['Fee Amount'])
         receive_row['amount'] += fees_data['Fee Amount']
-        # print(sent_row['amount'])
 
 
     else : 
@@ -147,18 +123,7 @@ def Create_one_row_from_two(same_refid_df) :
 
 
     fees_data = Identify_fees(sent_row, receive_row)
-    # print(" --------- Start compute ----------")
     sent_row, receive_row = Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction_type)
-                # same_refid_df.at[index, "amount"] = np.abs(row["amount"])
-    # print("Date' : ", sent_row['time'])
-    # print("Type' : ", transaction_type)
-    # print("Received Currency' : ", receive_row['asset'] )
-    # print("Received Amount' : ", receive_row['amount'])
-    # print("Sent Currency' : ", sent_row['asset'])
-    # print("Sent Amount' : ", sent_row['amount'])
-    # print("Fee Currency' : ", fees_data['Fee Currency'])
-    # print("Fee Amount' : ", fees_data['Fee Amount'])
-    # print("Fee Net Worth' : ", fees_data['Fee Net Worth'])
 
 
 
@@ -176,13 +141,6 @@ def Create_one_row_from_two(same_refid_df) :
         'Fee Net Worth' : fees_data['Fee Net Worth']
     }
 
-    # print("-------- Create one row from two --------")
-    # print("sent & receive row & new_row")
-    # print(sent_row)
-    # print(receive_row)
-    # print(new_row)
-    # print("transaction_type : ", transaction_type)
-    # print("fees_data : ", fees_data)
     return new_row
 
 
@@ -256,7 +214,6 @@ def Convert_reward_stack_or_other(row):
 
     # Compute the real value received, fee is a negative value so we add
     value_received_minus_fees = row['amount'] + row['fee']
-    # print('value_received_minus_fees : ', value_received_minus_fees)
     asset =  convert_asset_dict[row['asset']]
 
     new_row = pd.Series({
@@ -344,3 +301,49 @@ def Convert_kraken_deposit(row):
 #     return new_row
 
 
+def Convert_dustsweeping_into_several_rows(same_refid_df):
+    """
+    Convertit un groupe de lignes dustsweeping (N spend, 1 receive) 
+    en plusieurs lignes formatées en utilisant un actif pivot DUST_VIRTUAL.
+    """
+    new_rows = []
+    
+    # Séparation des lignes selon le type
+    spend_rows = same_refid_df.loc[same_refid_df['type'] == 'spend'].to_dict(orient='records')
+    receive_row = same_refid_df.loc[same_refid_df['type'] == 'receive'].to_dict(orient='records')[0]
+
+    # 1. Pour chaque ligne 'spend' (poussière), on crée un échange vers DUST_VIRTUAL
+    for s_row in spend_rows:
+        dust_part_row = {
+            'Date': s_row['time'],
+            'Type': 'Trade', # On le traite comme un trade pour le pipeline suivant
+            'Received Currency': 'DUST_VIRTUAL',
+            'Received Amount': 0.0, # On pourra mettre 1.0 ou laisser 0 car c'est neutre
+            'Received Net Worth': '',
+            'Sent Currency': s_row['asset'],
+            'Sent Amount': abs(float(s_row['amount'])), # On passe en positif pour le format cible
+            'Sent Net Worth': '',
+            'Fee Currency': s_row['asset'], # Souvent 0 sur Kraken pour les dusts
+            'Fee Amount': float(s_row['fee']),
+            'Fee Net Worth': ''
+        }
+        new_rows.append(dust_part_row)
+
+    # 2. On crée la ligne finale : Conversion du DUST_VIRTUAL vers la monnaie reçue (ex: ZEUR)
+    # Cette ligne est la seule potentiellement imposable dans le futur (si Received est du FIAT)
+    final_receive_row = {
+        'Date': receive_row['time'],
+        'Type': 'Trade',
+        'Received Currency': receive_row['asset'],
+        'Received Amount': float(receive_row['amount']),
+        'Received Net Worth': '',
+        'Sent Currency': 'DUST_VIRTUAL',
+        'Sent Amount': 0.0, # Équilibrage virtuel
+        'Sent Net Worth': '',
+        'Fee Currency': receive_row['asset'],
+        'Fee Amount': float(receive_row['fee']),
+        'Fee Net Worth': ''
+    }
+    new_rows.append(final_receive_row)
+
+    return new_rows

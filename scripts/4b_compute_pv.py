@@ -1,6 +1,4 @@
 import pandas as pd
-import time
-from datetime import datetime, timedelta
 import pipeline_fct
 import config
 
@@ -16,9 +14,6 @@ def compute_pv(df_loaded):
 
     print("Plus ou moins-value brute = Prix de cession – [Prix total d'acquisition x Prix de cession / Valeur globale du portefeuille]")
     for row_index in range(1,len(df_loaded)) : 
-    # for row_index in range(1,10) : 
-        print("---------------------- row_index : ",row_index)
-        print("wallet_value_eur : ", computed_situation.loc[row_index, "wallet_value_eur"])
         money_movement = computed_situation.loc[row_index, 'Money_movement']
         wallet_value_eur = computed_situation.loc[row_index, 'wallet_value_eur']
         fee_net_worth = computed_situation.loc[row_index, 'Fee Net Worth']
@@ -66,8 +61,4 @@ computed_pv = compute_pv(enriched_situation.copy(deep=True))
 
 
 # Pv = Prix de cession – (Prix total d'acquisition x Prix de cession / Valeur globale du portefeuille)
-
-
-# Export Excel via fonction commune (décommenter si besoin)
-# pipeline_fct.export_to_excel(computed_pv, 'Data/4_computed_as/computed_pv.xlsx')
 computed_pv.to_csv(computed_situation_path, index=False)
