@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timedelta
 import pipeline_fct
 import os
+import config
 
 from pipeline_fct import trade_date_to_cap_unix_nanoseconds
 from pipeline_fct import get_kraken_price_files_name
@@ -39,11 +40,11 @@ def export_es_and_price_db(enriched_situation, enriched_situation_path):
     # Export crypto_price_list
     crypto_price_list = [col for col in enriched_situation.columns if col.endswith('_price')]
     columns_for_price_db = crypto_price_list + ['Date']
-    enriched_situation[columns_for_price_db].to_csv('Data/3_enriched_as/price_db.csv', index=False)
+    enriched_situation[columns_for_price_db].to_csv(config.FILE_PRICE_DB, index=False)
 
 
 def export_price_db(price_db):
-    price_db.to_csv('Data/3_enriched_as/price_db.csv', index=False)
+    price_db.to_csv(config.FILE_PRICE_DB, index=False)
 
 
 def find_average_price_with_kraken_file(trade_date, crypto):
@@ -102,7 +103,7 @@ def main(enriched_situation_path, account_situation_path):
     enriched_situation = add_price_columns(enriched_situation, crypto_used_list)
 
 
-    price_db = f'Data/3_enriched_as/price_db.csv'
+    price_db = config.FILE_PRICE_DB
     print("avant if")
     if not os.path.exists(price_db):
         print("pendant if")
@@ -114,7 +115,7 @@ def main(enriched_situation_path, account_situation_path):
         df = pd.DataFrame(columns=col_list)
         
         print(df.head())
-        df.to_csv('Data/3_enriched_as/price_db.csv', index=False)
+        df.to_csv(config.FILE_PRICE_DB, index=False)
 
     print("apres if")
     price_db_df = pd.read_csv(price_db, sep=',')
@@ -166,9 +167,8 @@ def main(enriched_situation_path, account_situation_path):
 
 
 # File path
-enriched_situation_path = 'Data/3_enriched_as/as_with_crypto_prices.csv'
-account_situation_path = 'Data/2_account_situation/account_situation.csv'
+enriched_situation_path = config.FILE_AS_WITH_PRICES
+account_situation_path = config.FILE_ACCOUNT_SITUATION
 
 kraken_prices_file_df = pd.DataFrame()
 main(enriched_situation_path, account_situation_path)
-

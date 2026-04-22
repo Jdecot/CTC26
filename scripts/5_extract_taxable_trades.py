@@ -2,6 +2,7 @@ import pandas as pd
 import time
 from datetime import datetime, timedelta
 import pipeline_fct
+import config
 
 
 def formater_date(date_str):
@@ -58,13 +59,14 @@ def main(computed_situation_path, taxable_trades_situation_path):
     # taxable_trades_situation_filtered = taxable_trades_situation[col_to_keep]
     taxable_trades_situation_filtered = taxable_trades_situation
 
-    # taxable_trades_situation_filtered.to_csv(taxable_trades_situation_path, index=False)
-    taxable_trades_situation_filtered.to_csv(taxable_trades_situation_path + ".csv", index=False)
-    taxable_trades_situation_filtered.to_excel(taxable_trades_situation_path + ".xlsx", sheet_name='NomFeuille', index=False)
+    # Export to CSV
+    taxable_trades_situation_filtered.to_csv(config.FILE_TAXABLE_TRADES, index=False)
+    # Export Excel via fonction commune (décommenter si besoin)
+    # pipeline_fct.export_to_excel(taxable_trades_situation_filtered, taxable_trades_situation_path + ".xlsx", sheet_name='TaxableTrades')
 
 # File path
-computed_situation_path = 'Data/4_computed_as/computed_pv.csv'
-taxable_trades_situation_path = 'Data/5_taxable_trades_as/taxable_trades'
+computed_situation_path = config.FILE_COMPUTED_PV
+taxable_trades_situation_path = config.FILE_TAXABLE_TRADES
 
 
 main(computed_situation_path, taxable_trades_situation_path)

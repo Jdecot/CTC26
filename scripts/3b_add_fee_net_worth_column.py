@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timedelta
 import pipeline_fct
 import os
+import config
 
 def main(enriched_situation_path, enriched_situation_with_fees_worth_path):
     """
@@ -22,7 +23,7 @@ def main(enriched_situation_path, enriched_situation_with_fees_worth_path):
     enriched_situation[["Fee Net Worth"]] = float(0)
 
 
-    price_db = f'Data/3_enriched_as/price_db.csv'
+    price_db = config.FILE_PRICE_DB
     price_db_df = pd.read_csv(price_db, sep=',')
 
 
@@ -64,8 +65,8 @@ def main(enriched_situation_path, enriched_situation_with_fees_worth_path):
     enriched_situation.to_csv(enriched_situation_with_fees_worth_path, index=False)
 
 # File path
-enriched_situation_path = 'Data/3_enriched_as/as_with_crypto_prices.csv'
-enriched_situation_with_fees_worth_path = 'Data/3_enriched_as/es_with_fees_worth.csv'
+enriched_situation_path = config.FILE_AS_WITH_PRICES
+enriched_situation_with_fees_worth_path = config.FILE_ES_WITH_FEES_WORTH
 
 
 main(enriched_situation_path, enriched_situation_with_fees_worth_path)

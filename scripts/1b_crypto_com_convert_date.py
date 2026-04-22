@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+import config
 
 def main(ready_for_ingest_filepath, reworked_df):
     
@@ -26,7 +27,7 @@ def main(ready_for_ingest_filepath, reworked_df):
     print(f"Fichier exporté vers {reworked_df}")
 
 
-ready_for_ingest_filepath = 'Data/0_original_trade_files/cryptocom_2023_ready_for_ingest.csv'
-reworked_df = 'Data/1_ready_for_ingest/cryptocom_2023_ready_for_ingest_date_reworked.csv'
+ready_for_ingest_filepath = config.FILE_CRYPTOCOM_2023
+reworked_df = config.DIR_1_RFI / 'cryptocom_2023_ready_for_ingest_date_reworked.csv'
 
 main(ready_for_ingest_filepath, reworked_df)

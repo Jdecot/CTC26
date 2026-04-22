@@ -2,6 +2,7 @@ import pandas as pd
 import time
 from datetime import datetime, timedelta
 import pipeline_fct
+import config
 
 
 def compute_pv(df_loaded):
@@ -57,8 +58,8 @@ def compute_pv(df_loaded):
     
 
 # File path
-computed_situation_path = 'Data/4_computed_as/computed_pv.csv'
-enriched_situation_path = 'Data/4_computed_as/crypto_positions.csv'
+computed_situation_path = config.FILE_COMPUTED_PV
+enriched_situation_path = config.FILE_CRYPTO_POSITIONS
 
 enriched_situation = pd.read_csv(enriched_situation_path, sep=',')
 computed_pv = compute_pv(enriched_situation.copy(deep=True))
@@ -67,5 +68,6 @@ computed_pv = compute_pv(enriched_situation.copy(deep=True))
 # Pv = Prix de cession – (Prix total d'acquisition x Prix de cession / Valeur globale du portefeuille)
 
 
-computed_pv.to_excel('Data/4_computed_as/computed_pv.xlsx')
+# Export Excel via fonction commune (décommenter si besoin)
+# pipeline_fct.export_to_excel(computed_pv, 'Data/4_computed_as/computed_pv.xlsx')
 computed_pv.to_csv(computed_situation_path, index=False)

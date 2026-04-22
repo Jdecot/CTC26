@@ -2,6 +2,7 @@ import pandas as pd
 import time
 from datetime import datetime, timedelta
 import pipeline_fct
+import config
 
 def create_column_position_value(computed_situation, crypto):
     currency_amount_eur_column = f"{crypto}_position_value"
@@ -53,8 +54,9 @@ def compute_df(enriched_situation_df):
     # col_to_debug = ["Date", "Platform", "Type", "EUR_spent", "EUR_received", "wallet_value_eur",	"wallet_value_eur_m1","PTA","fraction_capital_initial", "plus_value", "Money_movement", "Fee Currency","Fee Amount","Fee Net Worth"]
     # # col_to_debug = ["Date", "Type", "wallet_value_eur",	"wallet_value_eur_m1","PTA","fraction_capital_initial", "plus_value", "Money_movement", "Fee Currency","Fee Amount","Fee Net Worth"]
     # print(enriched_situation_df[col_to_debug].head(10))
-    # enriched_situation_df.to_excel('Data/4_computed_as/debug_computed_situation.xlsx')
-    # enriched_situation_df[col_to_debug].head(10).to_excel('Data/4_computed_as/debug_filtered_computed_situation.xlsx')
+    # Export Excel via fonction commune (décommenter si besoin)
+    # pipeline_fct.export_to_excel(enriched_situation_df, 'Data/4_computed_as/debug_computed_situation.xlsx')
+    # pipeline_fct.export_to_excel(enriched_situation_df[col_to_debug].head(10), 'Data/4_computed_as/debug_filtered_computed_situation.xlsx')
     
     # Liste des colonnes à mettre au début (dans l'ordre souhaité)
     colonnes_debut = ["Date", "Platform", "Type", "wallet_value_eur", "wallet_value_eur_m1", "Money_movement", "Fee Currency","Fee Amount","Fee Net Worth"]
@@ -62,8 +64,8 @@ def compute_df(enriched_situation_df):
     nouvel_ordre_colonnes = colonnes_debut + colonnes_restantes
     computed_situation_df_reordonne = enriched_situation_df[nouvel_ordre_colonnes]
 
-    # DEBUG
-    computed_situation_df_reordonne.to_excel('Data/4_computed_as/debug_crypto_positions.xlsx')
+    # Export Excel via fonction commune (décommenter si besoin)
+    # pipeline_fct.export_to_excel(computed_situation_df_reordonne, 'Data/4_computed_as/debug_crypto_positions.xlsx')
     computed_situation_df_reordonne.to_csv(computed_situation_path, index=False)
 
     return computed_situation_df_reordonne
@@ -71,8 +73,8 @@ def compute_df(enriched_situation_df):
     
 
 # File path
-computed_situation_path = 'Data/4_computed_as/crypto_positions.csv'
-enriched_situation_path = 'Data/3_enriched_as/es_with_fees_worth.csv'
+computed_situation_path = config.FILE_CRYPTO_POSITIONS
+enriched_situation_path = config.FILE_ES_WITH_FEES_WORTH
 
 enriched_situation = pd.read_csv(enriched_situation_path, sep=',')
 computed_situation = compute_df(enriched_situation.copy(deep=True))

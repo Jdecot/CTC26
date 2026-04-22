@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 import time
+import config
 
 # def get_crypto_list_from_asdf(account_situation_path):
     
@@ -15,7 +16,7 @@ import time
 
 def get_crypto_list_from_all_trades():
     
-    all_trades_path = 'Data/1_ready_for_ingest/all_trades.csv'
+    all_trades_path = config.FILE_ALL_TRADES
     all_trades = pd.read_csv(all_trades_path, sep=',')
     
     unique_received_currency = all_trades['Received Currency'].dropna().unique().tolist()
@@ -137,7 +138,7 @@ def get_average_price_from_kraken_file(df_filtre):
 
 def load_prices_file_as_df(filename):
 
-    kraken_data_price = f'D:/Data_crypto_tax_calculator/Kraken_History_Update_merged/{filename}.csv'
+    kraken_data_price = config.DIR_KRAKEN_PRICES / f"{filename}.csv"
     price_to_use = pd.DataFrame()
     print(f"{kraken_data_price},  existe and loading : ", os.path.exists(kraken_data_price))
 
@@ -185,5 +186,3 @@ def trade_date_to_cap_unix_nanoseconds(trade_date):
     day_end_unix_nanoseconds = date_time_to_unix_nanoseconds(day_end)
 
     return day_start_unix_nanoseconds, day_end_unix_nanoseconds
-
-

@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 import os
+import config
 
 
 def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
     
-    ready_for_ingest_folder = "Data/1_ready_for_ingest/"
+    ready_for_ingest_folder = config.DIR_1_RFI
     # Lisez et fusionnez les fichiers CSV dans un seul DataFrame
     df_list = []
     for file in csv_files_dict:
@@ -41,13 +42,9 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
     df_sorted.to_csv(all_trades_ready_for_ingest_filepath, index=False, float_format='%.14f')
 
 
-csv_files_dict = {
-    "cryptocom_2023_ready_for_ingest_date_reworked.csv" : "cryptocom_2023",
-    "kraken_all_trades_ready_for_ingest.csv" : "kraken_all",
-    "bitmart_2024.csv" : "bitmart_2024"
-}
+csv_files_dict = config.MERGE_CONFIG
     
 
-all_trades_ready_for_ingest_filepath = "Data/1_ready_for_ingest/all_trades.csv"
+all_trades_ready_for_ingest_filepath = config.FILE_ALL_TRADES
 
 main(csv_files_dict, all_trades_ready_for_ingest_filepath)

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import pipeline_fct
+import config
 
 def test_if_trade_EURvsUSD(row):
     # On test si on est pas en train d'échanger de l'EUR contre USD ou vice versa
@@ -136,6 +137,6 @@ def main(ready_for_ingest_filepath,result_filepath):
     asdf.to_csv(result_filepath, index=False)
 
 
-ready_for_ingest_filepath = 'Data/1_ready_for_ingest/all_trades.csv'
-result_filepath = 'Data/2_account_situation/account_situation.csv'
+ready_for_ingest_filepath = config.FILE_ALL_TRADES
+result_filepath = config.FILE_ACCOUNT_SITUATION
 main(ready_for_ingest_filepath,result_filepath)

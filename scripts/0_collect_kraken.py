@@ -13,13 +13,13 @@ from typing import Any, Dict, List, Set
 
 import requests
 from dotenv import load_dotenv
+import config
 
 
 KRAKEN_API_URL = "https://api.kraken.com"
 KRAKEN_PRIVATE_PATH = "/0/private/Ledgers"
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR
-DATA_DIR = SCRIPT_DIR / "Data"
+DATA_DIR = config.DATA_DIR
 DEFAULT_CONFIG_PATH = SCRIPT_DIR / "0_collect_configs.json"
 
 # Délai entre les appels API (en secondes) pour éviter le rate limit

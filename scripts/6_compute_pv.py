@@ -2,6 +2,7 @@ import pandas as pd
 import time
 from datetime import datetime, timedelta
 import pipeline_fct
+import config
 
 
 def main(taxable_trades_situation_path, ):
@@ -31,7 +32,7 @@ def main(taxable_trades_situation_path, ):
 
 
 # File path
-taxable_trades_situation_path = 'Data/5_taxable_trades_as/taxable_trades.csv'
+taxable_trades_situation_path = config.FILE_TAXABLE_TRADES
 
 
 main(taxable_trades_situation_path)

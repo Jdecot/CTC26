@@ -1,20 +1,7 @@
 import pandas as pd
 import numpy as np
-
-from kraken_convert_fct import *
-
-
-def export_to_excel_for_check(df_ready_to_ingest, checkfile_path):
-    # Check with Excel
-    # dates_cible = ["2023-12-14 11:03:44", "2024-04-17 21:25:49", "2024-04-17 21:26:17", "2024-03-19 23:48:06"]
-    # dates_cible_datetime = [pd.to_datetime(date) for date in dates_cible]
-
-    # filtered_df = df_ready_to_ingest.loc[(df_ready_to_ingest['Sent Currency'] == 'ETH') | (df_ready_to_ingest['Received Currency'] == 'ETH')]
-    filtered_df = df_ready_to_ingest.loc[(df_ready_to_ingest['Type'] == 'transfer')]
-    # filtered_df = filtered_df.loc[filtered_df['Date'].isin(dates_cible)]
-
-    filtered_df.to_csv(checkfile_path, sep=',', index=False)
-    # filtered_df.to_excel('my_data.xlsx', index=False)
+import config
+from module_1a import *
 
 
 def treat_row_v2(ledger_df, row):
@@ -24,7 +11,7 @@ def treat_row_v2(ledger_df, row):
     new_row = None
     global treated_lines, treated_ref_id
 
-    # print(f"***********  treat row : {row['time']} - {refid}  ***************")
+    # print(f"***********  treat row : {row} ***************")
     if transaction_kind == 'deposit' and  currency not in ['EUR', 'USD']:
         # Il faut modifier chaque ligne deposit directement dans tax.crypto.com pour ajouter le wallet destination
         new_row = Convert_kraken_deposit(row)
@@ -47,51 +34,64 @@ def treat_row_v2(ledger_df, row):
 
     elif transaction_kind == 'transfer' :
         treated_lines["transfert_line_ignored"] += 1
-        # print("Treated as transfer")
+        if row['fee'] > 0 :
+            print("Transfer - corriger : fee supérieur à 0 pas prise en compte : ",  row)
 
     # All buy or send appears in two lines, one for the currency sold and one for the currency bought
     # It's necessary to merge them. The two lines shares the same refid.
-    elif transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id :
+    elif transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id and row['subtype'] != 'dustsweeping':
         # Find the two row with refid and create a df with only them
         # print("************ Row spend and receive ************")
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
         new_row = Create_one_row_from_two(same_refid_df)
         treated_ref_id.append(refid)
-        treated_lines["send_and_receive"] += 2
-        print(f"******* date : {new_row['Date']} *************")
-        print(f"{new_row['Type']} : reçu {new_row['Received Amount']} {new_row['Received Currency']}, sent {new_row['Sent Amount']} {new_row['Sent Currency']} ")
-        print(f"Frais de transaction : {new_row['Fee Amount']} {new_row['Fee Currency']} ")
-        print("Treated as spend receive")
-        
+        treated_lines["send_and_receive"] += 1
+        # print(f"******* date : {new_row['Date']} *************")
+        # print(f"{new_row['Type']} : reçu {new_row['Received Amount']} {new_row['Received Currency']}, sent {new_row['Sent Amount']} {new_row['Sent Currency']} ")
+        # print(f"Frais de transaction : {new_row['Fee Amount']} {new_row['Fee Currency']} ")
+        # print("Treated as spend receive")
+
+    elif transaction_kind in ['spend', 'receive'] and refid in treated_ref_id and row['subtype'] != 'dustsweeping':
+        treated_lines["send_and_receive"] += 1
+
+    elif row['subtype'] == 'dustsweeping' :
+        same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
+        # print("dustsweeping same ref if : ", len(same_refid_df))
+        if refid not in treated_ref_id :
+            # new_rows = Convert_dustsweeping_into_several_rows(same_refid_df)
+            treated_ref_id.append(refid)
+        treated_lines["dustsweeping"] += 1
+
     elif transaction_kind == 'staking' :
         new_row = Convert_reward_stack_or_other(row)
         treated_lines["staking"] += 1
         # print("Treated as staking")
-
-    elif transaction_kind == 'earn' :
-        treated_lines["earn_lines_ignored"] += 1
-        # print("Treated as earn")
 
     elif transaction_kind == 'trade' and refid not in treated_ref_id :
         # print("************ Row trade ************")
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
         # print(same_refid_df)
         new_row = Convert_two_trade_row(same_refid_df)
-        treated_lines["trade"] += 2
+        treated_lines["trade"] += 1
         treated_ref_id.append(refid)
         # print(f"new row : {new_row['Date']}")
 
-    # else : 
-    #     if refid in treated_ref_id :
-    #         print("Already treated")
-    #     else : 
-    #         print("Not treated")
+    elif transaction_kind == 'trade' and refid in treated_ref_id :
+        treated_lines["trade"] += 1
+
+    else:
+        # Ligne déjà traitée (refid déjà dans treated_ref_id) ou type non géré
+        if refid in treated_ref_id:
+            pass  # Déjà comptabilisé lors du premier traitement
+        else:
+            treated_lines["unprocessed_lines"] += 1
+            print(f"Ligne non traitée : type={transaction_kind}, refid={refid}, asset={currency}")
 
     return new_row
 
 
 def export_deposit_withdraw_csv(df):
-    depo_width_filepath = 'Data/other/deposit_withdrawal.csv'
+    depo_width_filepath = config.FILE_DEPOSIT_WITHDRAWAL
     filtered_df = df.loc[(df['type'] == 'deposit') | (df['type'] == 'withdrawal')]
     filtered_df.to_csv(depo_width_filepath, sep=',', index=False)
 
@@ -136,14 +136,15 @@ def convert_ledger_to_rfi(ledger_df):
     global treated_lines
     treated_lines = {
         'transfert_line_ignored' : 0,
-        'earn_lines_ignored' : 0,
         'deposit_in_crypto' : 0,
         'deposit_in_fiat' : 0,
         'withdrawal_crypto' : 0,
         'withdrawal_eur_ignored' : 0,
         'send_and_receive' : 0,
         'staking' : 0,
-        'trade' : 0
+        'trade' : 0,
+        'dustsweeping' : 0,
+        'unprocessed_lines' : 0
     }
 
     print(f"nombre de lignes dans ledger : {len(ledger_df)}")
@@ -154,14 +155,34 @@ def convert_ledger_to_rfi(ledger_df):
     for index in ledger_df.index:
         row = ledger_df.loc[index]
         # rfi_df, treated_ref_id, treated_lines = treat_row(ledger_df, rfi_df, row, index, treated_ref_id, treated_lines)
-        new_row = treat_row_v2(ledger_df, row)
-        if new_row is not None : rfi_df.loc[index] = new_row
+        new_rows = treat_row_v2(ledger_df, row)
+        if new_rows is not None:
+            if isinstance(new_rows, list):
+                # Si treat_row_v2 renvoie une liste de lignes, on les ajoute toutes
+                for row_data in new_rows:
+                    rfi_df.loc[len(rfi_df)] = row_data
+            else:
+                # Si treat_row_v2 renvoie une seule ligne (dict/Series)
+                rfi_df.loc[len(rfi_df)] = new_rows
+
 
     print("lignes traités : ", treated_lines)
     print("total lignes traités : ", sum(treated_lines.values()))
     print("taille new df : ", len(rfi_df))
 
+
+
+    return rfi_df
+
+
+def improve_rfi_quality(rfi_df):
     rfi_df = convert_columns_to_positive_values(rfi_df.copy(), ['Received Amount', 'Sent Amount', 'Fee Amount'])
+
+    # Convert timestamp to datetime format if Date column contains numeric timestamps
+    if 'Date' in rfi_df.columns:
+        rfi_df['Date'] = pd.to_datetime(rfi_df['Date'], errors='coerce', unit='s')
+        # Format as string for CSV export
+        rfi_df['Date'] = rfi_df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
     return rfi_df
 
@@ -169,34 +190,32 @@ def convert_ledger_to_rfi(ledger_df):
 def main():
 
     ledger_filename = [
-        "kraken_2023",
-        "kraken_2024",
-        "kraken_2025"
+        "kraken_all_trades",
     ]
 
     for ledger_filename in ledger_filename : 
         print(f"----------- {ledger_filename} ------------")
-        ledger_filepath = f"{"Data/0_original_trade_files"}/{ledger_filename}.csv"
-        ready_for_ingest_filepath = f'Data/1_ready_for_ingest/{ledger_filename}_ready_for_ingest.csv'
+        ledger_filepath = config.DIR_0_ORIGINAL / f"{ledger_filename}.csv"
+        ready_for_ingest_filepath = config.DIR_1_RFI / f'{ledger_filename}_ready_for_ingest.csv'
         ledger_df = pd.read_csv(ledger_filepath, sep=',')
         rfi_df = convert_ledger_to_rfi(ledger_df)
+        rfi_df = improve_rfi_quality(rfi_df)
 
         # Export to csv
         rfi_df.to_csv(ready_for_ingest_filepath, sep=',', index=False)
-        export_to_excel_for_check(rfi_df, f'Data/other/export_for_check_{ledger_filename}.csv')
 
 
 treated_ref_id = []
 treated_lines = {
     'transfert_line_ignored' : 0,
-    'earn_lines_ignored' : 0,
     'deposit_in_crypto' : 0,
     'deposit_in_fiat' : 0,
     'withdrawal_crypto' : 0,
     'withdrawal_eur_ignored' : 0,
     'send_and_receive' : 0,
     'staking' : 0,
-    'trade' : 0
+    'trade' : 0,
+    'dustsweeping' : 0,
+    'unprocessed_lines' : 0
 }
 main()
-
