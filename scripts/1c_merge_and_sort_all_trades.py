@@ -30,7 +30,8 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
             print(f"Le fichier {file} est vide, ignoré.")
             continue
         
-        df['platform'] = csv_files_dict[file]
+        # Insertion de la plateforme après la Date
+        df.insert(1, 'platform', csv_files_dict[file])
 
         df_list.append(df)
 

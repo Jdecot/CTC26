@@ -129,7 +129,10 @@ def Create_one_row_from_two(same_refid_df) :
 
     new_row = {
         'Date' : sent_row['time'], 
-        'Type' : transaction_type, 
+        'refid' : sent_row['refid'],
+        'subtype' : sent_row['subtype'],
+        'Type' : sent_row['type'],
+        'Detected Type' : transaction_type,
         'Received Currency' : receive_row['asset'], 
         'Received Amount' : receive_row['amount'], 
         'Received Net Worth' : '', 
@@ -168,58 +171,18 @@ def Convert_reward_stack_or_other(row):
     There should be no fees associated with any receive transactions, but we advise that you double check the transaction details
     """
 
-    convert_asset_dict = {
-    'ADA.S' : 'ADA',
-    'ADA' : 'ADA',
-    'MATIC04.S' : 'MATIC',
-    'MATIC.S' : 'MATIC',
-    'MATIC' : 'MATIC',
-    'SOL03.S' : 'SOL',
-    'SOL.S' : 'SOL',
-    'SOL' : 'SOL',
-    # Crypto-monnaies principales
-    "XXBT": "BTC",
-    "XXRP": "XRP",
-    "XETH": "ETH",
-    "XXDG": "DOGE",
-    # Variantes de staking (B=bonded, F=flexible) → currency de base
-    "XXBT.B": "BTC",
-    "XXBT.F": "BTC",
-    "XETH.B": "ETH",
-    "XETH.F": "ETH",
-    # Fiats
-    "ZEUR": "EUR",
-    "ZUSD": "USD",
-    # Margin
-    "XBT.M": "BTC",
-    # Variantes numérotées (staking ancien/nouveau)
-    "SOL03": "SOL",
-    "MATIC04": "MATIC",
-    # ETH2 staking (avant et après le merge)
-    "ETH2": "ETH",
-    "ETH2.S": "ETH",
-    "TRX":"TRX",
-    "INJ.F": "INJ",
-    "SOL.F": "SOL",
-    'TRX.F': 'TRX',
-    'ADA.F': 'ADA',
-    'EIGEN': 'EIGEN',
-    'USDC' : 'USDC',
-    'USDC.F' : 'USDC',
-    'USDC.M' : 'USDC',
-    'USDT.F': 'USDT',
-    'INJ' : 'INJ',
-    'INJ.B' : 'INJ'
-    }
+
 
     # Compute the real value received, fee is a negative value so we add
     value_received_minus_fees = row['amount'] + row['fee']
-    asset =  convert_asset_dict[row['asset']]
 
     new_row = pd.Series({
         'Date' : row['time'], 
-        'Type' : 'reward', 
-        'Received Currency' : asset, 
+        'refid' : row['refid'],
+        'subtype' : row['subtype'],
+        'Type' : row['type'],
+        'Detected Type' : 'reward',
+        'Received Currency' : row['asset'], 
         'Received Amount' : value_received_minus_fees, 
         'Received Net Worth' : '', 
         'Sent Currency' : '', 
@@ -235,7 +198,10 @@ def Convert_reward_stack_or_other(row):
 def Convert_kraken_withdrawal(row):
     new_row = pd.Series({
         'Date' : row['time'], 
-        'Type' : 'transfer', 
+        'refid' : row['refid'],
+        'subtype' : row['subtype'],
+        'Type' : row['type'],
+        'Detected Type' : 'transfer',
         'Received Currency' : row['asset'], 
         'Received Amount' : row['amount'], 
         'Received Net Worth' : '', 
@@ -261,7 +227,10 @@ def Convert_kraken_deposit(row):
     """
     new_row = pd.Series({
         'Date' : row['time'], 
-        'Type' : 'transfer', 
+        'refid' : row['refid'],
+        'subtype' : row['subtype'],
+        'Type' : row['type'],
+        'Detected Type' : 'transfer',
         'Received Currency' : row['asset'], 
         'Received Amount' : row['amount'], 
         'Received Net Worth' : '', 
@@ -316,7 +285,10 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
     for s_row in spend_rows:
         dust_part_row = {
             'Date': s_row['time'],
-            'Type': 'Trade', # On le traite comme un trade pour le pipeline suivant
+            'refid' : s_row['refid'],
+            'subtype' : s_row['subtype'],
+            'Type' : s_row['type'],
+            'Detected Type': 'trade',
             'Received Currency': 'DUST_VIRTUAL',
             'Received Amount': 0.0, # On pourra mettre 1.0 ou laisser 0 car c'est neutre
             'Received Net Worth': '',
@@ -325,7 +297,7 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
             'Sent Net Worth': '',
             'Fee Currency': s_row['asset'], # Souvent 0 sur Kraken pour les dusts
             'Fee Amount': float(s_row['fee']),
-            'Fee Net Worth': ''
+            'Fee Net Worth': '',
         }
         new_rows.append(dust_part_row)
 
@@ -333,7 +305,10 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
     # Cette ligne est la seule potentiellement imposable dans le futur (si Received est du FIAT)
     final_receive_row = {
         'Date': receive_row['time'],
-        'Type': 'Trade',
+        'refid' : receive_row['refid'],
+        'subtype' : receive_row['subtype'],
+        'Type' : receive_row['type'],
+        'Detected Type': 'trade',
         'Received Currency': receive_row['asset'],
         'Received Amount': float(receive_row['amount']),
         'Received Net Worth': '',
@@ -342,7 +317,7 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
         'Sent Net Worth': '',
         'Fee Currency': receive_row['asset'],
         'Fee Amount': float(receive_row['fee']),
-        'Fee Net Worth': ''
+        'Fee Net Worth': '',
     }
     new_rows.append(final_receive_row)
 

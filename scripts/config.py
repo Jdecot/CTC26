@@ -21,6 +21,7 @@ FILE_CRYPTOCOM_2023 = DIR_0_ORIGINAL / "cryptocom_2023_ready_for_ingest.csv"
 FILE_BITMART_2024 = DIR_0_ORIGINAL / "bitmart_2024.csv"
 
 FILE_ALL_TRADES = DIR_1_RFI / "all_trades.csv"
+FILE_ALL_TRADES_NORMALIZED = DIR_1_RFI / "all_trades_normalized.csv"
 FILE_ACCOUNT_SITUATION = DIR_2_AS / "account_situation.csv"
 FILE_AS_WITH_PRICES = DIR_3_ENRICHED / "as_with_crypto_prices.csv"
 FILE_ES_WITH_FEES_WORTH = DIR_3_ENRICHED / "es_with_fees_worth.csv"
@@ -38,4 +39,40 @@ MERGE_CONFIG = {
     "cryptocom_2023_ready_for_ingest_date_reworked.csv" : "cryptocom_2023",
     "kraken_all_trades_ready_for_ingest.csv" : "kraken_all",
     "bitmart_2024.csv" : "bitmart_2024"
+}
+
+
+
+
+KRAKEN_CRYPTO_ID = {
+# --- BITCOIN & ETHEREUM ---
+    "XXBT": "BTC", "XXBT.F": "BTC", "XXBT.B": "BTC", "XBT.M": "BTC", "XBT": "BTC",
+    "XETH": "ETH", "XETH.F": "ETH", "ETH2.S": "ETH", "ETH": "ETH",
+    
+    # --- FIAT & STABLES ---
+    "ZEUR": "EUR", "EUR": "EUR", "ZUSD": "USD", "USD": "USD",
+    "USDC": "USDC", "USDC.F": "USDC", "USDC.M": "USDC",
+    "USDT": "USDT", "USDT.F": "USDT",
+    
+    # --- ALTCOINS (Vérifiés et validés) ---
+    "LINK": "LINK",
+    "EIGEN": "EIGEN",
+    "TRUMP": "TRUMP",
+    "ADA": "ADA", "ADA.F": "ADA", "ADA.S": "ADA",
+    "SOL": "SOL", "SOL.F": "SOL", "SOL.S": "SOL", "SOL03.S": "SOL",
+    "TRX": "TRX", "TRX.F": "TRX",
+    "INJ": "INJ", "INJ.F": "INJ", "INJ.B": "INJ",
+    "MATIC": "MATIC", "MATIC.S": "MATIC", "MATIC04.S": "MATIC",
+    "POL.F": "POL", "POL": "POL",
+    "XXDG": "DOGE", "DOGE": "DOGE",
+    "XXRP": "XRP", "XRP": "XRP",
+    "JUP": "JUP", "TAO": "TAO", "NEAR": "NEAR", "PEPE": "PEPE",
+    "ALGO": "ALGO", "SUI": "SUI", "ONDO": "ONDO", "BIT": "BIT",
+    "ANKR": "ANKR", "GALA": "GALA", "DOT": "DOT", "QNT": "QNT",
+    "ATOM": "ATOM", "AVAX": "AVAX", "PYTH": "PYTH", "FIL": "FIL",
+    "GRT": "GRT", "FET": "FET", "RNDR": "RNDR", "ARB": "ARB",
+    "ASTR": "ASTR", "ORCA": "ORCA", "ICP": "ICP", "OP": "OP", "IMX": "IMX",
+    
+    # --- ACTIF VIRTUEL ---
+    "DUST_VIRTUAL": "DUST_VIRTUAL"
 }

@@ -25,7 +25,8 @@ def main(enriched_situation_path, enriched_situation_with_fees_worth_path):
 
 
     for row_index in range(1, len(enriched_situation)):
-        fee_currency = enriched_situation.loc[row_index, 'Fee Currency']
+        # On utilise la devise normalisée pour chercher le prix dans la base de données
+        fee_currency = enriched_situation.loc[row_index, 'Normalized Fee Currency']
         fee_amount = enriched_situation.loc[row_index, 'Fee Amount']
         trade_date = enriched_situation.loc[row_index, "Date"]
         if not pd.isna(fee_currency) :

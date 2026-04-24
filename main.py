@@ -14,7 +14,8 @@ scripts = [
     "1a_kraken_convert.py",
     "1b_crypto_com_convert_date.py", 
     "1c_merge_and_sort_all_trades.py",
-    "2_create_account_situation.py"
+    "2a_normalize.py",
+    "2b_create_account_situation.py"
 ]
 
 

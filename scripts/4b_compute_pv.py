@@ -18,13 +18,13 @@ def compute_pv(df_loaded):
         wallet_value_eur = computed_situation.loc[row_index, 'wallet_value_eur']
         fee_net_worth = computed_situation.loc[row_index, 'Fee Net Worth']
 
-        if computed_situation.loc[row_index, 'Money_movement'] > 0 and computed_situation.loc[row_index, 'Type'] == 'buy' :
+        if computed_situation.loc[row_index, 'Money_movement'] > 0 and computed_situation.loc[row_index, 'Detected Type'] == 'buy' :
             print("buy so PTA")
             computed_situation.loc[row_index, 'wallet_value_eur_m1'] = wallet_value_eur - money_movement
             computed_situation.loc[row_index, 'PTA'] = computed_situation.loc[row_index-1, 'PTA'] + money_movement + fee_net_worth
             computed_situation.loc[row_index, 'PTA_fees_not_integrated'] = computed_situation.loc[row_index-1, 'PTA_fees_not_integrated'] + money_movement  
         
-        elif computed_situation.loc[row_index, 'Money_movement'] > 0 and computed_situation.loc[row_index, 'Type'] == 'sell' :
+        elif computed_situation.loc[row_index, 'Money_movement'] > 0 and computed_situation.loc[row_index, 'Detected Type'] == 'sell' :
             print("sell so PTA")
             prix_cession = money_movement
             wallet_value_eur_m1 = wallet_value_eur + money_movement

@@ -6,11 +6,16 @@ import config
 
 def get_crypto_list_from_all_trades():
     
-    all_trades_path = config.FILE_ALL_TRADES
+    # On utilise le fichier normalisé pour obtenir la liste propre des cryptos
+    all_trades_path = config.FILE_ALL_TRADES_NORMALIZED
+    if not os.path.exists(all_trades_path):
+        all_trades_path = config.FILE_ALL_TRADES
+        
     all_trades = pd.read_csv(all_trades_path, sep=',')
     
-    unique_received_currency = all_trades['Received Currency'].dropna().unique().tolist()
-    unique_sent_currency = all_trades['Sent Currency'].dropna().unique().tolist()
+    # On se base sur les colonnes normalisées (doivent exister pour la sécurité)
+    unique_received_currency = all_trades['Normalized Received Currency'].dropna().unique().tolist()
+    unique_sent_currency = all_trades['Normalized Sent Currency'].dropna().unique().tolist()
 
     combined_currencies = unique_received_currency + unique_sent_currency
 

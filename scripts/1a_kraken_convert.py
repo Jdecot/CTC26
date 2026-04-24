@@ -7,13 +7,11 @@ def treat_row_v2(ledger_df, row):
     transaction_kind = row['type']
     refid = row['refid']
     currency = row['asset']
-    new_row = None
+    new_rows = []
     global treated_lines, treated_ref_id
 
-    # print(f"***********  treat row : {row} ***************")
     if transaction_kind == 'deposit' and  currency not in ['EUR', 'USD']:
-        # Il faut modifier chaque ligne deposit directement dans tax.crypto.com pour ajouter le wallet destination
-        new_row = Convert_kraken_deposit(row)
+        new_rows.append(Convert_kraken_deposit(row).to_dict())
         treated_lines["deposit_in_crypto"] += 1
         # print("Treated as deposit in crypto")
     
@@ -22,10 +20,8 @@ def treat_row_v2(ledger_df, row):
         # print("Treated as deposit in currency")
 
     elif transaction_kind == 'withdrawal' and  currency not in ['EUR', 'USD'] :
-        # print("transaction_kind : ", transaction_kind)
-        new_row = Convert_kraken_withdrawal(row)
+        new_rows.append(Convert_kraken_withdrawal(row).to_dict())
         treated_lines["withdrawal_crypto"] += 1
-        # print("Treated as withdrawal in crypto")
 
     elif  transaction_kind == 'withdrawal' and  currency in ['EUR', 'USD'] :
         treated_lines["withdrawal_eur_ignored"] += 1
@@ -41,7 +37,7 @@ def treat_row_v2(ledger_df, row):
     elif transaction_kind in ['spend', 'receive'] and refid not in treated_ref_id and row['subtype'] != 'dustsweeping':
         # Find the two row with refid and create a df with only them
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
-        new_row = Create_one_row_from_two(same_refid_df)
+        new_rows.append(Create_one_row_from_two(same_refid_df))
         treated_ref_id.append(refid)
         treated_lines["send_and_receive"] += 1
 
@@ -51,17 +47,17 @@ def treat_row_v2(ledger_df, row):
     elif row['subtype'] == 'dustsweeping' :
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
         if refid not in treated_ref_id :
-            new_row = Convert_dustsweeping_into_several_rows(same_refid_df)
+            new_rows.extend(Convert_dustsweeping_into_several_rows(same_refid_df))
             treated_ref_id.append(refid)
         treated_lines["dustsweeping"] += 1
 
     elif transaction_kind == 'staking' :
-        new_row = Convert_reward_stack_or_other(row)
+        new_rows.append(Convert_reward_stack_or_other(row).to_dict())
         treated_lines["staking"] += 1
 
     elif transaction_kind == 'trade' and refid not in treated_ref_id :
         same_refid_df = ledger_df.loc[ledger_df['refid'] == refid]
-        new_row = Convert_two_trade_row(same_refid_df)
+        new_rows.append(Convert_two_trade_row(same_refid_df))
         treated_lines["trade"] += 1
         treated_ref_id.append(refid)
 
@@ -76,7 +72,7 @@ def treat_row_v2(ledger_df, row):
             treated_lines["unprocessed_lines"] += 1
             print(f"Ligne non traitée : type={transaction_kind}, refid={refid}, asset={currency}")
 
-    return new_row
+    return new_rows
 
 
 def export_deposit_withdraw_csv(df):
@@ -106,7 +102,12 @@ def convert_ledger_to_rfi(ledger_df):
     Cette fonction lis le fichier exporté depuis kraken.com et le met en ordre pour être ingéré par l'app en ligne
     """
         
-    rfi_df = pd.DataFrame(columns=["Date", "Type", "Received Currency",	"Received Amount", "Received Net Worth", "Sent Currency", "Sent Amount", "Sent Net Worth", "Fee Currency", "Fee Amount", "Fee Net Worth"])
+    rfi_df = pd.DataFrame(columns=[
+        "Date", "refid", "subtype", "Type", "Detected Type", 
+        "Received Currency", "Received Amount", "Received Net Worth", 
+        "Sent Currency", "Sent Amount", "Sent Net Worth", 
+        "Fee Currency", "Fee Amount", "Fee Net Worth"
+    ])
     
     export_deposit_withdraw_csv(ledger_df)
 
@@ -131,15 +132,9 @@ def convert_ledger_to_rfi(ledger_df):
     # Loop, treat each ledger row and add result to RFI
     for index in ledger_df.index:
         row = ledger_df.loc[index]
-        new_rows = treat_row_v2(ledger_df, row)
-        if new_rows is not None:
-            if isinstance(new_rows, list):
-                # Si treat_row_v2 renvoie une liste de lignes, on les ajoute toutes
-                for row_data in new_rows:
-                    rfi_df.loc[len(rfi_df)] = row_data
-            else:
-                # Si treat_row_v2 renvoie une seule ligne (dict/Series)
-                rfi_df.loc[len(rfi_df)] = new_rows
+        processed_rows = treat_row_v2(ledger_df, row)
+        for row_data in processed_rows:
+            rfi_df.loc[len(rfi_df)] = row_data
 
 
     print("lignes traités : ", treated_lines)

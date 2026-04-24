@@ -43,7 +43,11 @@ def compute_df(enriched_situation_df):
         enriched_situation_df["wallet_value_eur"] += enriched_situation_df[crypto_amount_eur_column].fillna(value=0)
 
     # Liste des colonnes à mettre au début (dans l'ordre souhaité)
-    colonnes_debut = ["Date", "Platform", "Type", "wallet_value_eur", "wallet_value_eur_m1", "Money_movement", "Fee Currency","Fee Amount","Fee Net Worth"]
+    colonnes_debut = ["Date", "Platform", "refid", "subtype", "Type", "Detected Type", 
+                      "Received Currency", "Normalized Received Currency", 
+                      "Sent Currency", "Normalized Sent Currency",
+                      "wallet_value_eur", "wallet_value_eur_m1", "Money_movement", 
+                      "Fee Currency", "Normalized Fee Currency", "Fee Amount", "Fee Net Worth"]
     colonnes_restantes = [col for col in enriched_situation_df.columns if col not in colonnes_debut]
     nouvel_ordre_colonnes = colonnes_debut + colonnes_restantes
     computed_situation_df_reordonne = enriched_situation_df[nouvel_ordre_colonnes]

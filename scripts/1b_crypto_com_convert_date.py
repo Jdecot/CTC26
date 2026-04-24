@@ -11,6 +11,12 @@ def main(ready_for_ingest_filepath, reworked_df):
         empty_df = pd.DataFrame(columns=["Date", "Type", "Received Currency", "Received Amount", 
                                           "Received Net Worth", "Sent Currency", "Sent Amount", 
                                           "Sent Net Worth", "Fee Currency", "Fee Amount", "Fee Net Worth"])
+        empty_df = pd.DataFrame(columns=[
+            "Date", "refid", "subtype", "Type", "Detected Type",
+            "Received Currency", "Received Amount", "Received Net Worth", 
+            "Sent Currency", "Sent Amount", "Sent Net Worth", 
+            "Fee Currency", "Fee Amount", "Fee Net Worth"
+        ])
         empty_df.to_csv(ready_for_ingest_filepath, sep=',', index=False)
     
     # Définir filepath to read and filepath to export
@@ -20,6 +26,11 @@ def main(ready_for_ingest_filepath, reworked_df):
     if not cryptocom_2023_ready_for_ingest.empty:
         cryptocom_2023_ready_for_ingest['Date'] = pd.to_datetime(cryptocom_2023_ready_for_ingest['Date'], format='%m/%d/%Y %H:%M:%S')
 
+    # Ajout des nouvelles colonnes et renommage
+    cryptocom_2023_ready_for_ingest['Detected Type'] = cryptocom_2023_ready_for_ingest['Type']
+    cryptocom_2023_ready_for_ingest['Type'] = ""
+    cryptocom_2023_ready_for_ingest['refid'] = ""
+    cryptocom_2023_ready_for_ingest['subtype'] = ""
     # export - éviter la notation scientifique pour les petits nombres
     # 14 décimales pour conserver toute la précision (certains nombres en ont jusqu'à 13)
     cryptocom_2023_ready_for_ingest.to_csv(reworked_df, index=False, float_format='%.14f')

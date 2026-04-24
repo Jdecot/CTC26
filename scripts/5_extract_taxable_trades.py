@@ -34,7 +34,10 @@ def lastModification(df):
 
     col_list_to_round =  ["wallet_value_eur_m1", "Money_movement", "PTA", "wallet_value_eur", "plus_value", "fraction_capital_initial"]
     df = roundColumns(df, col_list_to_round)
-    colonnes_debut = ["Date", "wallet_value_eur_m1", "Money_movement", "PTA",  "plus_value", "Platform", "Type", "fraction_capital_initial", "wallet_value_eur"]
+    colonnes_debut = ["Date", "wallet_value_eur_m1", "Money_movement", "PTA", "plus_value", "Platform", 
+                      "refid", "subtype", "Type", "Detected Type", 
+                      "Received Currency", "Normalized Received Currency", 
+                      "fraction_capital_initial", "wallet_value_eur"]
     new_df = df[colonnes_debut]
 
     return new_df
@@ -46,7 +49,7 @@ def main(computed_situation_path, taxable_trades_situation_path):
     
     computed_situation = lastModification(computed_situation.copy())
 
-    taxable_trades_situation = computed_situation[(computed_situation['Type'] == 'sell')]
+    taxable_trades_situation = computed_situation[(computed_situation['Detected Type'] == 'sell')]
     taxable_trades_situation_filtered = taxable_trades_situation
 
     # Export to CSV
