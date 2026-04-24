@@ -39,29 +39,6 @@ def _parse_date_to_unix(date_str: str) -> int:
     return int(dt.timestamp())
 
 
-def load_kraken_config(config_path: Path = DEFAULT_CONFIG_PATH) -> Dict[str, str]:
-    path = Path(config_path)
-    if not path.is_absolute():
-        path = (SCRIPT_DIR / path).resolve()
-    if not path.exists():
-        raise RuntimeError(f"Config file not found: {path}")
-
-    content = json.loads(path.read_text(encoding="utf-8"))
-    required_fields = ("kraken_start_date", "kraken_end_date", "kraken_output_path")
-    missing = [field for field in required_fields if field not in content]
-    if missing:
-        raise RuntimeError(f"Missing fields in config {path}: {', '.join(missing)}")
-
-    output_path = Path(str(content["kraken_output_path"]).strip())
-    if not output_path.is_absolute():
-        output_path = (DATA_DIR / output_path).resolve()
-
-    return {
-        "start_date": str(content["kraken_start_date"]).strip(),
-        "end_date": str(content["kraken_end_date"]).strip(),
-        "output_path": str(output_path),
-    }
-
 
 def _fetch_ledger_page(api_key: str, api_secret: str, start: int, end: int, ofs: int = 0) -> Dict[str, Any]:
     """
@@ -124,8 +101,10 @@ def _append_rows_to_csv(output_path: Path, rows: List[Dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
-def collect_kraken_transactions(config_path: Path = DEFAULT_CONFIG_PATH) -> int:
+def collect_kraken_transactions() -> int:
     load_dotenv()
+    
+    # 1. Récupération des clés API
     api_key = os.getenv("KRAKEN_API_KEY", "").strip()
     api_secret = (
         os.getenv("KRAKEN_SECRET_KEY", "").strip()
@@ -136,18 +115,16 @@ def collect_kraken_transactions(config_path: Path = DEFAULT_CONFIG_PATH) -> int:
             "Missing KRAKEN_API_KEY and secret key (KRAKEN_SECRET_KEY or KRAKEN_API_SECRET)."
         )
 
-    config = load_kraken_config(config_path)
-    output_path = Path(config["output_path"])
+    # 2. Utilisation des constantes de config.py
+    # On utilise des points . au lieu des crochets [] car c'est un module importé
+    output_path = config.KRAKEN_COLLECT_OUTPUT_FILE
+    start_unix = _parse_date_to_unix(config.KRAKEN_START_DATE)
+    end_unix = _parse_date_to_unix(config.KRAKEN_END_DATE) + 86399
 
-    # --- CRÉATION DU DOSSIER SI INEXISTANT ---
+    # 3. Création du dossier si inexistant
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # --- ON NE LIT PLUS L'ANCIEN FICHIER ---
-    # On repart de zéro comme demandé (on vide le fichier)
-    start_unix = _parse_date_to_unix(config["start_date"])
-    end_unix = _parse_date_to_unix(config["end_date"]) + 86399
     
-    existing_ids = set() # On commence avec un set vide
+    existing_ids = set() 
     ofs = 0
     page_size = 50  
     total_new_rows = 0
@@ -161,7 +138,8 @@ def collect_kraken_transactions(config_path: Path = DEFAULT_CONFIG_PATH) -> int:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
 
-    print(f"Fetching Kraken ledger from {config['start_date']} to {config['end_date']}...")
+    # Correction de l'affichage print ici aussi
+    print(f"Fetching Kraken ledger from {config.KRAKEN_START_DATE} to {config.KRAKEN_END_DATE}...")
 
     while True:
         try:
@@ -214,7 +192,6 @@ def collect_kraken_transactions(config_path: Path = DEFAULT_CONFIG_PATH) -> int:
     return total_new_rows
 
 if __name__ == "__main__":
-    config = load_kraken_config()
     total = collect_kraken_transactions()
     print(
         f"Completed: Step 0 - Collect Kraken data : {total} transactions totales"

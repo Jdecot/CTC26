@@ -2,6 +2,9 @@ import pandas as pd
 import pipeline_fct
 import config
 
+from decimal import Decimal, getcontext
+getcontext().prec = 50  # On définit une très haute précision
+
 def test_if_trade_EURvsUSD(row):
     # On test si on est pas en train d'échanger de l'EUR contre USD ou vice versa
     if row["Received Currency"] in ['EUR', 'USD'] :
@@ -43,15 +46,15 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
 
     # Observed transaction
     Received_Currency = row_ready_for_ingest["Received Currency"]
-    Received_Amount = row_ready_for_ingest["Received Amount"]
+    Received_Amount = Decimal(str(row_ready_for_ingest["Received Amount"]))
     Sent_Currency = row_ready_for_ingest["Sent Currency"]
-    Sent_Amount  = row_ready_for_ingest["Sent Amount"]
+    Sent_Amount = Decimal(str(row_ready_for_ingest["Sent Amount"]))
 
     # On utilise les valeurs normalisées pour la logique de calcul des balances (éviter les doublons XXBT/BTC)
     Norm_Received_Currency = row_ready_for_ingest["Normalized Received Currency"]
     Norm_Sent_Currency = row_ready_for_ingest["Normalized Sent Currency"]
     Normalized_Fee_Currency = row_ready_for_ingest["Normalized Fee Currency"]
-    Fee_Amount = row_ready_for_ingest["Fee Amount"]
+    Fee_Amount = Decimal(str(row_ready_for_ingest["Fee Amount"]))
 
 
     row_asdf_last_row["Date"] = row_ready_for_ingest["Date"]
@@ -135,9 +138,8 @@ def main(ready_for_ingest_filepath,result_filepath):
     data = {col: 0.0 if col in combined_list else '' for col in columns}
 
     # Create df
+    data = {col: Decimal('0') if col in combined_list else '' for col in columns}
     asdf = pd.DataFrame(data, index=[0])
-    for column in combined_list :
-        asdf[column] = asdf[column].astype('float64')
 
 
     # Iterate on ready_for_ingest, convert each transaction into a new account situation row

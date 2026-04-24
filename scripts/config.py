@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 # Chemins de base
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "Data"
@@ -44,6 +45,14 @@ MERGE_CONFIG = {
 
 
 
+# --- CONFIGURATION COLLECTE KRAKEN ---
+KRAKEN_START_DATE = "2023-01-01"
+KRAKEN_END_DATE = "2026-04-06"
+# On utilise le chemin déjà défini DIR_0_ORIGINAL pour la cohérence
+KRAKEN_COLLECT_OUTPUT_FILE = DIR_0_ORIGINAL / "kraken_all_trades.csv"
+
+
+
 KRAKEN_CRYPTO_ID = {
 # --- BITCOIN & ETHEREUM ---
     "XXBT": "BTC", "XXBT.F": "BTC", "XXBT.B": "BTC", "XBT.M": "BTC", "XBT": "BTC",
@@ -76,3 +85,4 @@ KRAKEN_CRYPTO_ID = {
     # --- ACTIF VIRTUEL ---
     "DUST_VIRTUAL": "DUST_VIRTUAL"
 }
+
