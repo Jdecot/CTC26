@@ -31,6 +31,14 @@ def remove_amount_to_currency_in_row(row, currency, amount_to_remove):
     row[currency] = new_amount
     return row
 
+
+def remove_fee_from_currency_in_row(row, currency, amount_to_remove):
+    current_ammount = row[currency]
+    new_amount = current_ammount - amount_to_remove
+    row[currency] = new_amount
+    return row
+
+
 def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row):
 
     # Observed transaction
@@ -42,6 +50,9 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
     # On utilise les valeurs normalisées pour la logique de calcul des balances (éviter les doublons XXBT/BTC)
     Norm_Received_Currency = row_ready_for_ingest["Normalized Received Currency"]
     Norm_Sent_Currency = row_ready_for_ingest["Normalized Sent Currency"]
+    Normalized_Fee_Currency = row_ready_for_ingest["Normalized Fee Currency"]
+    Fee_Amount = row_ready_for_ingest["Fee Amount"]
+
 
     row_asdf_last_row["Date"] = row_ready_for_ingest["Date"]
     row_asdf_last_row["Platform"] = row_ready_for_ingest["platform"]
@@ -73,6 +84,12 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row
         row_asdf_last_row = add_amount_to_curreny_in_row(row_asdf_last_row.copy(), Norm_Received_Currency, Received_Amount)
     if Norm_Sent_Currency not in ['EUR', 'USD']:
         row_asdf_last_row = remove_amount_to_currency_in_row(row_asdf_last_row.copy(), Norm_Sent_Currency, Sent_Amount)
+
+
+    # Enleve les fee à la quantité de crypto de la ligne
+    if pd.notna(Normalized_Fee_Currency) and pd.notna(Fee_Amount):
+        if Normalized_Fee_Currency not in ['EUR', 'USD']:
+            row_asdf_last_row = remove_fee_from_currency_in_row(row_asdf_last_row.copy(), Normalized_Fee_Currency, Fee_Amount)
 
 
     # If transaction is taxable or used to compute "prix total d'acquisition du portefeuille",
@@ -130,7 +147,7 @@ def main(ready_for_ingest_filepath,result_filepath):
 
 
         # If ready_for_ingest row is a transaction, add it to asdf
-        if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade'] :
+        if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade','transfer'] :
             if test_if_trade_EURvsUSD(row_ready_for_ingest) :
                 print("Transaction EUR vs USD ignoré")
                 asdf_last_row = asdf.loc[index].copy()
@@ -146,7 +163,8 @@ def main(ready_for_ingest_filepath,result_filepath):
                 new_row = add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row)
                 asdf.loc[index+1] = new_row
 
-    asdf.to_csv(result_filepath, index=False)
+    # Utilisation de float_format pour éviter la notation scientifique et conserver 18 décimales de précision
+    asdf.to_csv(result_filepath, index=False, float_format='%.18f')
 
 
 ready_for_ingest_filepath = config.FILE_ALL_TRADES_NORMALIZED

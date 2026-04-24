@@ -62,7 +62,8 @@ def show_holdings():
     print("📊 HOLDINGS (dernière ligne)")
     print("="*40)
     for crypto, qty in sorted_holdings.items():
-        print(f"  {crypto}: {qty}")
+        # Formate en décimal avec 18 chiffres max après la virgule, en supprimant les zéros inutiles à la fin
+        print(f"  {crypto}: {qty:.18f}".rstrip('0').rstrip('.'))
 
 
 def export_all_csv_to_excel():

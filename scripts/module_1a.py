@@ -63,7 +63,7 @@ def Identify_fees(sent_row, receive_row) :
         fees_dict['Fee Currency'] = receive_row['asset']
         fees_dict['Fee Amount'] = abs(receive_row['fee'])
         fees_dict['Fee Row'] = 'receive_row'
-     
+    
     return fees_dict
 
 
@@ -97,7 +97,8 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
     
     # Case when trade crypto for another one, fees in the receive row, remove fees from received amount to get total amount received
     elif (transaction_type == 'trade') & (fees_data['Fee Row'] == 'receive_row') :
-        receive_row['amount'] += fees_data['Fee Amount']
+        # receive_row['amount'] += fees_data['Fee Amount']
+        pass
 
 
     else : 
