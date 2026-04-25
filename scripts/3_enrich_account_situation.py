@@ -12,7 +12,7 @@ def add_price_columns(enriched_situation, asdf_crypto_used):
     # Add price columns
     for crypto in asdf_crypto_used :
         crypto_price_column = f"{crypto}_price"
-        enriched_situation[crypto_price_column] = 'null'
+        enriched_situation[crypto_price_column] = None
     return enriched_situation
     
 

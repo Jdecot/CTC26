@@ -39,7 +39,8 @@ FILE_DEPOSIT_WITHDRAWAL = DIR_OTHER / "deposit_withdrawal.csv"
 MERGE_CONFIG = {
     "cryptocom_2023_ready_for_ingest_date_reworked.csv" : "cryptocom_2023",
     "kraken_all_trades_ready_for_ingest.csv" : "kraken_all",
-    "bitmart_2024.csv" : "bitmart_2024"
+    "bitmart_2024.csv" : "bitmart_2024",
+    "tangem_rfi.csv" : "tangem_rfi"
 }
 
 

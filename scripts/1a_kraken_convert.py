@@ -103,7 +103,7 @@ def convert_ledger_to_rfi(ledger_df):
     """
         
     rfi_df = pd.DataFrame(columns=[
-        "Date", "refid", "subtype", "Type", "Detected Type", 
+        "Date", "refid", "Detected Type", "Type", "subtype",
         "Received Currency", "Received Amount", "Received Net Worth", 
         "Sent Currency", "Sent Amount", "Sent Net Worth", 
         "Fee Currency", "Fee Amount", "Fee Net Worth"

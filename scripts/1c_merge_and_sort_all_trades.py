@@ -16,12 +16,13 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
         if not os.path.exists(file_path):
             print(f"Le fichier {file_path} n'existe pas. Création d'un fichier vide.")
             # Créer un DataFrame vide avec les bonnes colonnes
-            empty_df = pd.DataFrame(columns=["Date", "Type", "Received Currency", "Received Amount", 
-                                              "Received Net Worth", "Sent Currency", "Sent Amount", 
-                                              "Sent Net Worth", "Fee Currency", "Fee Amount", "Fee Net Worth"])
+            empty_df = pd.DataFrame(columns=["Date", "refid", "Detected Type", "Type", "subtype",
+            "Received Currency", "Received Amount", "Received Net Worth", 
+            "Sent Currency", "Sent Amount", "Sent Net Worth", 
+            "Fee Currency", "Fee Amount", "Fee Net Worth"])
             empty_df.to_csv(file_path, sep=',', index=False)
 
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, sep=',')
         if csv_files_dict[file] == 'bitmart_2024' :
             print('bitmart !!!')
         
@@ -39,7 +40,7 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
 
     # Trie et export - éviter la notation scientifique pour les petits nombres
     df_sorted = df_merged.sort_values(by='Date')
-    df_sorted.to_csv(all_trades_ready_for_ingest_filepath, index=False, float_format='%.14f')
+    df_sorted.to_csv(all_trades_ready_for_ingest_filepath, index=False, float_format='%.18f')
 
 
 csv_files_dict = config.MERGE_CONFIG
