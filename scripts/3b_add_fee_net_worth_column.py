@@ -1,5 +1,5 @@
 import pandas as pd
-import pipeline_fct
+import module_global
 import config
 
 def main(enriched_situation_path, enriched_situation_with_fees_worth_path):
@@ -8,8 +8,8 @@ def main(enriched_situation_path, enriched_situation_with_fees_worth_path):
     For each column crypto in account_situation.csv, enriched_situation.csv adds a ccurency_price column
     """
 
-    crypto_used_list = pipeline_fct.get_crypto_list_from_all_trades()
-    crypto_prices_files = pipeline_fct.get_kraken_price_files_name()
+    crypto_used_list = module_global.get_crypto_list_from_all_trades()
+    crypto_prices_files = module_global.get_kraken_price_files_name()
 
 
     # Get and set df

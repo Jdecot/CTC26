@@ -1,5 +1,5 @@
 import pandas as pd
-import pipeline_fct
+import module_global
 import config
 
 
@@ -7,7 +7,7 @@ def main(taxable_trades_situation_path, ):
     """
     """
 
-    crypto_used_list = pipeline_fct.get_crypto_list_from_all_trades()
+    crypto_used_list = module_global.get_crypto_list_from_all_trades()
 
     taxable_trades_situation = pd.read_csv(taxable_trades_situation_path, sep=',')
 

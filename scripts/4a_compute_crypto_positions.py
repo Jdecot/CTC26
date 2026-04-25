@@ -1,5 +1,5 @@
 import pandas as pd
-import pipeline_fct
+import module_global
 import config
 
 def create_column_position_value(computed_situation, crypto):
@@ -27,7 +27,7 @@ def compute_df(enriched_situation_df):
 
     """
 
-    crypto_used_list = pipeline_fct.get_crypto_list_from_all_trades()
+    crypto_used_list = module_global.get_crypto_list_from_all_trades()
 
     # Pour chaque position, on va calculer sa valeur en euro 
     # quantité de crypto X sa valeur en euro = valeur de la position

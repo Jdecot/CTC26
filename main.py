@@ -6,6 +6,7 @@ import os
 # Ajouter le dossier scripts au path pour pouvoir importer config
 sys.path.append(str(Path(__file__).parent / "scripts"))
 import config
+import module_global
 
 BASE_DIR = Path(__file__).parent
 SCRIPTS_DIR = BASE_DIR / "scripts"
@@ -28,42 +29,6 @@ def run_pipeline():
             print(f"❌ {s} a échoué")
             sys.exit(1)
     print("\n✅ Pipeline terminé avec succès !")
-
-
-def show_holdings():
-    """Lit la dernière ligne de account_situation.csv et affiche les holdings triés."""
-    csv_path = config.FILE_ACCOUNT_SITUATION
-    
-    if not csv_path.exists():
-        print(f"⚠️  Fichier non trouvé : {csv_path}")
-        return
-    
-    df = pd.read_csv(csv_path)
-    if df.empty:
-        print("⚠️  Le fichier account_situation.csv est vide")
-        return
-    
-    last_row = df.iloc[-1]
-    
-    # Convertir toutes les valeurs en numérique (les erreurs deviennent NaN)
-    holdings = {}
-    for col in df.columns:
-        try:
-            val = float(last_row[col])
-            if val > 0:
-                holdings[col] = val
-        except (ValueError, TypeError):
-            # Ignore les colonnes non numériques ou valeurs non convertibles
-            pass
-    
-    sorted_holdings = dict(sorted(holdings.items(), key=lambda x: x[1], reverse=True))
-    
-    print("\n" + "="*40)
-    print("📊 HOLDINGS (dernière ligne)")
-    print("="*40)
-    for crypto, qty in sorted_holdings.items():
-        # Formate en décimal avec 18 chiffres max après la virgule, en supprimant les zéros inutiles à la fin
-        print(f"  {crypto}: {qty:.18f}".rstrip('0').rstrip('.'))
 
 
 def export_all_csv_to_excel():
@@ -106,7 +71,7 @@ def export_all_csv_to_excel():
 
 def main():
     run_pipeline()
-    show_holdings()
+    # module_global.show_holdings()
     print("\n" + "="*40)
     print("📁 Export Excel")
     print("="*40)

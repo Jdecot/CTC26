@@ -164,3 +164,38 @@ def trade_date_to_cap_unix_nanoseconds(trade_date):
     day_end_unix_nanoseconds = date_time_to_unix_nanoseconds(day_end)
 
     return day_start_unix_nanoseconds, day_end_unix_nanoseconds
+
+def show_holdings():
+    """Lit la dernière ligne de account_situation.csv et affiche les holdings triés."""
+    csv_path = config.FILE_ACCOUNT_SITUATION
+    
+    if not csv_path.exists():
+        print(f"⚠️  Fichier non trouvé : {csv_path}")
+        return
+    
+    df = pd.read_csv(csv_path)
+    if df.empty:
+        print("⚠️  Le fichier account_situation.csv est vide")
+        return
+    
+    last_row = df.iloc[-1]
+    
+    # Convertir toutes les valeurs en numérique (les erreurs deviennent NaN)
+    holdings = {}
+    for col in df.columns:
+        try:
+            val = float(last_row[col])
+            if val > 0:
+                holdings[col] = val
+        except (ValueError, TypeError):
+            # Ignore les colonnes non numériques ou valeurs non convertibles
+            pass
+    
+    sorted_holdings = dict(sorted(holdings.items(), key=lambda x: x[1], reverse=True))
+    
+    print("\n" + "="*40)
+    print("📊 HOLDINGS (dernière ligne)")
+    print("="*40)
+    for crypto, qty in sorted_holdings.items():
+        # Formate en décimal avec 18 chiffres max après la virgule, en supprimant les zéros inutiles à la fin
+        print(f"  {crypto}: {qty:.18f}".rstrip('0').rstrip('.'))

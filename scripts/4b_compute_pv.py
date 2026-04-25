@@ -1,5 +1,5 @@
 import pandas as pd
-import pipeline_fct
+import module_global
 import config
 
 

@@ -1,174 +1,117 @@
 import pandas as pd
-import pipeline_fct
+import module_global
 import config
 
 from decimal import Decimal, getcontext
-getcontext().prec = 50  # On définit une très haute précision
+getcontext().prec = 50 
+
+def get_mapped_currency(currency):
+    """Utilise ton dictionnaire de config pour unifier les noms (ex: XXBT -> BTC)"""
+    if pd.isna(currency) or currency == "":
+        return ""
+    return config.KRAKEN_CRYPTO_ID.get(currency, currency)
 
 def test_if_trade_EURvsUSD(row):
-    # On test si on est pas en train d'échanger de l'EUR contre USD ou vice versa
-    if row["Received Currency"] in ['EUR', 'USD'] :
-        received_eur_usd = True
-    else :
-        received_eur_usd = False
+    # On utilise les versions mappées pour le test
+    rec_mapped = get_mapped_currency(row["Received Currency"])
+    sent_mapped = get_mapped_currency(row["Sent Currency"])
+    
+    received_eur_usd = rec_mapped in ['EUR', 'USD']
+    sent_eur_usd = sent_mapped in ['EUR', 'USD']
 
-    if row["Sent Currency"] in ['EUR', 'USD'] :
-        sent_eur_usd = True
-    else :
-        sent_eur_usd = False
-
-    # define if les deux conditions sont vraies en même temps
-    ignore_condition = received_eur_usd & sent_eur_usd
-    return ignore_condition
+    return received_eur_usd and sent_eur_usd
 
 
 def add_amount_to_curreny_in_row(row, currency, amount_to_add):
-    current_ammount = row[currency]
-    new_amount = current_ammount + amount_to_add
-    row[currency] = new_amount
+    curr = get_mapped_currency(currency) # ON MAPPE ICI
+    current_ammount = Decimal(str(row[curr]))
+    new_amount = current_ammount + Decimal(str(amount_to_add))
+    row[curr] = new_amount
     return row
 
 def remove_amount_to_currency_in_row(row, currency, amount_to_remove):
-    current_ammount = row[currency]
-    new_amount = current_ammount - amount_to_remove
-    row[currency] = new_amount
+    curr = get_mapped_currency(currency) # ON MAPPE ICI
+    current_ammount = Decimal(str(row[curr]))
+    new_amount = current_ammount - Decimal(str(amount_to_remove))
+    row[curr] = new_amount
     return row
 
 
 def remove_fee_from_currency_in_row(row, currency, amount_to_remove):
-    current_ammount = row[currency]
-    new_amount = current_ammount - amount_to_remove
-    row[currency] = new_amount
+    curr = get_mapped_currency(currency) # ON MAPPE ICI
+    current_ammount = Decimal(str(row[curr]))
+    new_amount = current_ammount - Decimal(str(amount_to_remove))
+    row[curr] = new_amount
     return row
 
 
-def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, row_asdf_last_row):
+def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
+    new_row = asdf_last_row.copy()
 
-    # Observed transaction
-    Received_Currency = row_ready_for_ingest["Received Currency"]
-    Received_Amount = Decimal(str(row_ready_for_ingest["Received Amount"]))
-    Sent_Currency = row_ready_for_ingest["Sent Currency"]
-    Sent_Amount = Decimal(str(row_ready_for_ingest["Sent Amount"]))
+    rec_amount = row_ready_for_ingest["Received Amount"]
+    sent_amount = row_ready_for_ingest["Sent Amount"]
+    fee_amount = row_ready_for_ingest["Fee Amount"]
+    
+    rec_curr = row_ready_for_ingest["Received Currency"]
+    sent_curr = row_ready_for_ingest["Sent Currency"]
+    fee_curr = row_ready_for_ingest["Fee Currency"]
 
-    # On utilise les valeurs normalisées pour la logique de calcul des balances (éviter les doublons XXBT/BTC)
-    Norm_Received_Currency = row_ready_for_ingest["Normalized Received Currency"]
-    Norm_Sent_Currency = row_ready_for_ingest["Normalized Sent Currency"]
-    Normalized_Fee_Currency = row_ready_for_ingest["Normalized Fee Currency"]
-    Fee_Amount = Decimal(str(row_ready_for_ingest["Fee Amount"]))
+    if pd.notna(rec_curr) and rec_curr != '':
+        new_row = add_amount_to_curreny_in_row(new_row, rec_curr, rec_amount)
+    
+    if pd.notna(sent_curr) and sent_curr != '':
+        new_row = remove_amount_to_currency_in_row(new_row, sent_curr, sent_amount)
 
+    if pd.notna(fee_curr) and fee_curr != '' and fee_amount > 0:
+        new_row = remove_fee_from_currency_in_row(new_row, fee_curr, fee_amount)
 
-    row_asdf_last_row["Date"] = row_ready_for_ingest["Date"]
-    row_asdf_last_row["Platform"] = row_ready_for_ingest["platform"]
-    row_asdf_last_row["Received Currency"] = Received_Currency
-    row_asdf_last_row["Normalized Received Currency"] = Norm_Received_Currency
-    row_asdf_last_row["Sent Currency"] = Sent_Currency
-    row_asdf_last_row["Normalized Sent Currency"] = Norm_Sent_Currency
-    row_asdf_last_row["refid"] = row_ready_for_ingest["refid"]
-    row_asdf_last_row["subtype"] = row_ready_for_ingest["subtype"]
-    row_asdf_last_row["Type"] = row_ready_for_ingest["Type"]
-    row_asdf_last_row["Detected Type"] = row_ready_for_ingest["Detected Type"]
-
-    # On conserve les deux colonnes pour la traçabilité
-    row_asdf_last_row['Fee Currency'] = row_ready_for_ingest['Fee Currency']
-    row_asdf_last_row['Normalized Fee Currency'] = row_ready_for_ingest['Normalized Fee Currency']
-    row_asdf_last_row['Fee Amount'] = row_ready_for_ingest['Fee Amount']
-    row_asdf_last_row['Fee Net Worth'] = row_ready_for_ingest['Fee Net Worth']
-
-    row_asdf_last_row['Money_movement'] = 0
-
-    # Detection des trades impliquant une devise (qui devraient alors être sell ou buy plutôt que trade)
-    if row_ready_for_ingest["Detected Type"] == 'trade' and Norm_Received_Currency in ['EUR', 'USD']:
-        row_asdf_last_row["Detected Type"] = 'sell'
-    if row_ready_for_ingest["Detected Type"] == 'trade' and Norm_Sent_Currency in ['EUR', 'USD']:
-        row_asdf_last_row["Detected Type"] = 'buy'
-
-    # Add amounts using normalized currencies for balance logic
-    if Norm_Received_Currency not in ['EUR', 'USD']:
-        row_asdf_last_row = add_amount_to_curreny_in_row(row_asdf_last_row.copy(), Norm_Received_Currency, Received_Amount)
-    if Norm_Sent_Currency not in ['EUR', 'USD']:
-        row_asdf_last_row = remove_amount_to_currency_in_row(row_asdf_last_row.copy(), Norm_Sent_Currency, Sent_Amount)
+    new_row["Date"] = row_ready_for_ingest["Date"]
+    new_row["Platform"] = row_ready_for_ingest["platform"]
+    new_row["refid"] = row_ready_for_ingest["refid"]
+    new_row["subtype"] = row_ready_for_ingest["subtype"]
+    new_row["Type"] = row_ready_for_ingest["Type"]
+    new_row["Detected Type"] = row_ready_for_ingest['Detected Type']
+    
+    return new_row
 
 
-    # Enleve les fee à la quantité de crypto de la ligne
-    if pd.notna(Normalized_Fee_Currency) and pd.notna(Fee_Amount):
-        if Normalized_Fee_Currency not in ['EUR', 'USD']:
-            row_asdf_last_row = remove_fee_from_currency_in_row(row_asdf_last_row.copy(), Normalized_Fee_Currency, Fee_Amount)
+# --- MAIN ---
+
+ready_for_ingest = pd.read_csv(config.FILE_ALL_TRADES_NORMALIZED)
+
+# Création des colonnes UNIQUEMENT avec les noms mappés (BTC, ETH, etc.)
+all_currencies_raw = set(ready_for_ingest["Received Currency"].dropna()) | \
+                     set(ready_for_ingest["Sent Currency"].dropna()) | \
+                     set(ready_for_ingest["Fee Currency"].dropna())
+
+all_currencies_mapped = set([get_mapped_currency(c) for c in all_currencies_raw if c != ""])
+
+asdf = pd.DataFrame(columns=list(ready_for_ingest.columns) + list(all_currencies_mapped))
+
+# Initialisation ligne 0
+init_row = {col: "" for col in asdf.columns}
+for curr in all_currencies_mapped:
+    init_row[curr] = Decimal('0')
+asdf.loc[0] = init_row
 
 
-    # If transaction is taxable or used to compute "prix total d'acquisition du portefeuille",
-    # then memorise how much has been received or sent in globality since the first trade
-    if row_asdf_last_row["Detected Type"] == 'buy' and Norm_Sent_Currency == 'EUR':
-        row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Sent Amount'])
-    if row_asdf_last_row["Detected Type"] == 'buy' and Norm_Sent_Currency == 'USD':
-        row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Sent Amount'])*0.9222
+for index, row in ready_for_ingest.iterrows():
+    row_ready_for_ingest = ready_for_ingest.loc[index]
 
-    if row_asdf_last_row["Detected Type"] == 'sell' and Norm_Received_Currency == 'EUR':
-        row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Received Amount'])
-    if row_asdf_last_row["Detected Type"] == 'sell' and Norm_Received_Currency == 'USD':
-        row_asdf_last_row['Money_movement'] = float(row_ready_for_ingest['Received Amount'])*0.9222
+    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade','transfer'] :
+        if test_if_trade_EURvsUSD(row_ready_for_ingest) :
+            asdf_last_row = asdf.iloc[-1].copy()
+            asdf_last_row['Detected Type'] = 'trade_between_currency'
+            asdf_last_row["Date"] = row_ready_for_ingest["Date"]
+            asdf_last_row["Platform"] = row_ready_for_ingest["platform"]
+            asdf_last_row["refid"] = row_ready_for_ingest["refid"]
+            asdf_last_row["subtype"] = row_ready_for_ingest["subtype"]
+            asdf_last_row["Type"] = row_ready_for_ingest["Type"]
+            asdf.loc[len(asdf)] = asdf_last_row
+        else : 
+            asdf_last_row = asdf.iloc[-1].copy()
+            new_row = add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row)
+            asdf.loc[len(asdf)] = new_row
 
-
-
-
-    return row_asdf_last_row
-
-
-def main(ready_for_ingest_filepath,result_filepath):
-    """
-    Cette fonction lis un fichier ready_for_ingest et le met en ordre pour être ingéré par l'app en ligne
-    """
-
-    # Import data file and create empty export df (to be filled)
-    ready_for_ingest = pd.read_csv(ready_for_ingest_filepath, sep=',')
-
-    # Define columns
-    crypto_used_list = pipeline_fct.get_crypto_list_from_all_trades()
-    print("crypto_used_list : ", crypto_used_list)
-    currency_situation_list = ['EUR_spent','EUR_received']
-    # Ajout de Normalized Fee Currency à la liste des colonnes de situation
-    fees_list = ['Fee Currency', 'Normalized Fee Currency', 'Fee Amount', 'Fee Net Worth']
-    combined_list = crypto_used_list + currency_situation_list + fees_list
-
-    # On ajoute les colonnes de traçabilité dans le fichier de situation
-    columns = ['Date', 'Platform', 'refid', 'subtype', 'Type', 'Detected Type', 
-               'Received Currency', 'Normalized Received Currency', 
-               'Sent Currency', 'Normalized Sent Currency', 'Money_movement'] + combined_list
-
-    # # Define first row (filled with 0 amount of each currency)
-    data = {col: 0.0 if col in combined_list else '' for col in columns}
-
-    # Create df
-    data = {col: Decimal('0') if col in combined_list else '' for col in columns}
-    asdf = pd.DataFrame(data, index=[0])
-
-
-    # Iterate on ready_for_ingest, convert each transaction into a new account situation row
-    for index in range(0,len(ready_for_ingest)):
-        # Define ready_for_ingest row to add, add a row to asdf
-        row_ready_for_ingest = ready_for_ingest.loc[index]
-
-
-        # If ready_for_ingest row is a transaction, add it to asdf
-        if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade','transfer'] :
-            if test_if_trade_EURvsUSD(row_ready_for_ingest) :
-                print("Transaction EUR vs USD ignoré")
-                asdf_last_row = asdf.loc[index].copy()
-                asdf_last_row['Detected Type'] = 'trade_between_currency'
-                asdf_last_row["Date"] = row_ready_for_ingest["Date"]
-                asdf_last_row["Platform"] = row_ready_for_ingest["platform"]
-                asdf_last_row["refid"] = row_ready_for_ingest["refid"]
-                asdf_last_row["subtype"] = row_ready_for_ingest["subtype"]
-                asdf_last_row["Type"] = row_ready_for_ingest["Type"]
-                asdf.loc[index+1] = asdf_last_row
-            else : 
-                asdf_last_row = asdf.iloc[-1].copy()
-                new_row = add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row)
-                asdf.loc[index+1] = new_row
-
-    # Utilisation de float_format pour éviter la notation scientifique et conserver 18 décimales de précision
-    asdf.to_csv(result_filepath, index=False, float_format='%.18f')
-
-
-ready_for_ingest_filepath = config.FILE_ALL_TRADES_NORMALIZED
-result_filepath = config.FILE_ACCOUNT_SITUATION
-main(ready_for_ingest_filepath,result_filepath)
+asdf.to_csv(config.FILE_ACCOUNT_SITUATION, index=False)
+module_global.show_holdings()

@@ -1,12 +1,12 @@
 import pandas as pd
-import pipeline_fct
+import module_global
 import os
 import config
 
-from pipeline_fct import trade_date_to_cap_unix_nanoseconds
-from pipeline_fct import get_kraken_price_files_name
-from pipeline_fct import load_prices_file_as_df
-from pipeline_fct import get_average_price_from_kraken_file
+from module_global import trade_date_to_cap_unix_nanoseconds
+from module_global import get_kraken_price_files_name
+from module_global import load_prices_file_as_df
+from module_global import get_average_price_from_kraken_file
 
 def add_price_columns(enriched_situation, asdf_crypto_used):
     # Add price columns
@@ -76,7 +76,7 @@ def main(enriched_situation_path, account_situation_path):
     For each column crypto in account_situation.csv, enriched_situation.csv adds a ccurency_price column
     """
 
-    crypto_used_list = pipeline_fct.get_crypto_list_from_all_trades()
+    crypto_used_list = module_global.get_crypto_list_from_all_trades()
     
 
     # Get and set df
