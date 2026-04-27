@@ -56,13 +56,13 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
     sent_curr = row_ready_for_ingest["Sent Currency"]
     fee_curr = row_ready_for_ingest["Fee Currency"]
 
-    if pd.notna(rec_curr) and rec_curr != '':
+    if pd.notna(rec_curr) and rec_curr != '' and row_ready_for_ingest['Detected Type'] != 'transfer' :
         new_row = add_amount_to_curreny_in_row(new_row, rec_curr, rec_amount)
     
-    if pd.notna(sent_curr) and sent_curr != '':
+    if pd.notna(sent_curr) and sent_curr != '' and row_ready_for_ingest['Detected Type'] != 'transfer':
         new_row = remove_amount_to_currency_in_row(new_row, sent_curr, sent_amount)
 
-    if pd.notna(fee_curr) and fee_curr != '' and fee_amount > 0:
+    if pd.notna(fee_curr) and fee_curr != '' and Decimal(str(fee_amount)) > 0:
         new_row = remove_fee_from_currency_in_row(new_row, fee_curr, fee_amount)
 
     new_row["Date"] = row_ready_for_ingest["Date"]
@@ -71,13 +71,13 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
     new_row["subtype"] = row_ready_for_ingest["subtype"]
     new_row["Type"] = row_ready_for_ingest["Type"]
     new_row["Detected Type"] = row_ready_for_ingest['Detected Type']
-    
+
     return new_row
 
 
 # --- MAIN ---
 
-ready_for_ingest = pd.read_csv(config.FILE_ALL_TRADES_NORMALIZED)
+ready_for_ingest = pd.read_csv(config.FILE_ALL_TRADES_NORMALIZED, dtype=str)
 
 # Création des colonnes UNIQUEMENT avec les noms mappés (BTC, ETH, etc.)
 all_currencies_raw = set(ready_for_ingest["Received Currency"].dropna()) | \
