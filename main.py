@@ -2,11 +2,12 @@ import subprocess, sys
 from pathlib import Path
 import pandas as pd
 import os
+import shutil
 
 # Ajouter le dossier scripts au path pour pouvoir importer config
 sys.path.append(str(Path(__file__).parent / "scripts"))
-import config
 import module_global
+import config
 
 BASE_DIR = Path(__file__).parent
 SCRIPTS_DIR = BASE_DIR / "scripts"
@@ -31,42 +32,44 @@ def run_pipeline():
     print("\n✅ Pipeline terminé avec succès !")
 
 
-def export_all_csv_to_excel():
-    """Convertit tous les CSV du dossier Data en fichiers Excel dans Data/excel."""
-    excel_dir = config.DIR_EXCEL
+
+def export_all_csv_to_excel(source_dir, target_dir):
+    """
+    Scans the source directory for CSV files and converts them to Excel 
+    using the convert_csv_to_excel helper function.
+    """
+    # 1. Cleanup target directory
+    if target_dir.exists():
+        # shutil.rmtree with ignore_errors handles locked files (e.g., OneDrive)
+        shutil.rmtree(target_dir, ignore_errors=True)
+        print(f"  🗑️ Cleaned up target directory: {target_dir}")
     
-    # Vider le dossier excel s'il existe
-    if excel_dir.exists():
-        import shutil
-        # Utiliser ignore_errors=True pour éviter les blocages liés à OneDrive ou des fichiers ouverts
-        shutil.rmtree(excel_dir, ignore_errors=True)
-        print(f"  🗑️ Nettoyage du dossier {excel_dir} (les fichiers verrouillés sont conservés)")
+    target_dir.mkdir(parents=True, exist_ok=True)
     
-    excel_dir.mkdir(parents=True, exist_ok=True)
+    processed_files_count = 0
     
-    csv_count = 0
-    for root, dirs, files in os.walk(config.DATA_DIR, topdown=True):
-        # Ignorer le dossier de destination 'excel' et les dossiers 'old' pour éviter les conflits d'accès
-        dirs[:] = [d for d in dirs if d.lower() not in ['excel', 'old']]
-        for file in files:
-            if file.endswith('.csv'):
-                csv_path = Path(root) / file
-                # Calculer le chemin relatif pour préserver la structure
-                rel_path = csv_path.relative_to(config.DATA_DIR)
-                excel_path = excel_dir / rel_path.with_suffix('.xlsx')
+    # 2. Iterate through directory tree
+    for root, sub_dirs, files in os.walk(source_dir, topdown=True):
+        # Exclude specific directories to prevent conflicts or infinite loops
+        sub_dirs[:] = [d for d in sub_dirs if d.lower() not in ['excel', 'old', 'debug']]
+        
+        for file_name in files:
+            if file_name.endswith('.csv'):
+                current_csv_path = Path(root) / file_name
                 
-                # Créer les sous-dossiers si nécessaire
-                excel_path.parent.mkdir(parents=True, exist_ok=True)
+                # Maintain original folder structure in the target directory
+                relative_file_path = current_csv_path.relative_to(source_dir)
+                current_excel_path = target_dir / relative_file_path.with_suffix('.xlsx')
                 
-                try:
-                    df = pd.read_csv(csv_path, sep=',')
-                    df.to_excel(excel_path, index=False)
-                    csv_count += 1
-                    # print(f"  ✓ {rel_path} -> {excel_path.relative_to(BASE_DIR)}")
-                except Exception as e:
-                    print(f"  ✗ Erreur lors de la conversion de {rel_path}: {e}")
+                # Execute single file conversion
+                is_successful = module_global.convert_csv_to_excel(current_csv_path, current_excel_path)
+                if is_successful:
+                    processed_files_count += 1
     
-    print(f"\n📊 {csv_count} fichiers CSV convertis en Excel dans Data/excel/")
+    print(f"\n📊 Batch conversion finished: {processed_files_count} files processed.")
+
+# --- Usage Example ---
+# export_all_csv_to_excel(config.DATA_DIR, config.DIR_EXCEL)
 
 
 def main():
@@ -75,8 +78,9 @@ def main():
     print("\n" + "="*40)
     print("📁 Export Excel")
     print("="*40)
-    export_all_csv_to_excel()
-
+    
+    # Pass the required arguments from your config module
+    export_all_csv_to_excel(config.DATA_DIR, config.DIR_EXCEL)
 
 if __name__ == "__main__":
     main()

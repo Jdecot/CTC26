@@ -13,11 +13,9 @@ def treat_row_v2(ledger_df, row):
     if transaction_kind == 'deposit' and  currency not in ['EUR', 'USD']:
         new_rows.append(Convert_kraken_deposit(row).to_dict())
         treated_lines["deposit_in_crypto"] += 1
-        # print("Treated as deposit in crypto")
     
     elif transaction_kind == 'deposit' and  currency in ['EUR', 'USD']:
         treated_lines["deposit_in_fiat"] += 1
-        # print("Treated as deposit in currency")
 
     elif transaction_kind == 'withdrawal' and  currency not in ['EUR', 'USD'] :
         new_rows.append(Convert_kraken_withdrawal(row).to_dict())
@@ -25,11 +23,10 @@ def treat_row_v2(ledger_df, row):
 
     elif  transaction_kind == 'withdrawal' and  currency in ['EUR', 'USD'] :
         treated_lines["withdrawal_eur_ignored"] += 1
-        # print("Treated as withdrawal in currency")
 
     elif transaction_kind == 'transfer' :
         treated_lines["transfert_line_ignored"] += 1
-        if row['fee'] > 0 :
+        if float(row['fee']) > 0 : # fl
             print("Transfer - corriger : fee supérieur à 0 pas prise en compte : ",  row)
 
     # All buy or send appears in two lines, one for the currency sold and one for the currency bought
@@ -82,17 +79,33 @@ def export_deposit_withdraw_csv(df):
 
 
 def convert_columns_to_positive_values(df, cols_to_modify):
-    # ---------- Convert columns to positive values (because no negative values allowed)
-    def format_value(x):
-        if pd.isna(x):
-            return ""
-        else:
-            return f"{x:.10f}"
-        
-    pd.set_option('display.float_format', '{:.10f}'.format)
-    for column_to_modify in cols_to_modify :
-        df[column_to_modify] = pd.to_numeric(df[column_to_modify], errors='coerce').abs()
-        df[column_to_modify] = df[column_to_modify].apply(format_value)
+    """
+    Convertit les colonnes spécifiées en valeurs positives.
+    Affiche les détails en cas d'erreur de conversion.
+    """
+    for column in cols_to_modify:
+        if column in df.columns:
+            # On utilise une boucle plus classique pour accéder facilement à l'index et aux autres colonnes
+            for index, row in df.iterrows():
+                val = row[column]
+                
+                # On ignore les valeurs déjà vides
+                if pd.isna(val) or str(val).strip() == "":
+                    continue
+                
+                try:
+                    # Tentative de conversion
+                    df.at[index, column] = abs(Decimal(str(val)))
+                except Exception:
+                    # Affichage des détails si ça plante
+                    date_val = row.get('Date', 'N/A')
+                    print(f"⚠️ Erreur de conversion !")
+                    print(f"   - Colonne : {column}")
+                    print(f"   - Index   : {index}")
+                    print(f"   - Date    : {date_val}")
+                    print(f"   - Valeur  : '{val}'")
+                    print(f"-------------------------")
+                    # On laisse la valeur telle quelle pour ne pas bloquer le script
     
     return df
 
@@ -151,29 +164,27 @@ def improve_rfi_quality(rfi_df):
 
     # Convert timestamp to datetime format if Date column contains numeric timestamps
     if 'Date' in rfi_df.columns:
-        rfi_df['Date'] = pd.to_datetime(rfi_df['Date'], errors='coerce', unit='s')
-        # Format as string for CSV export
-        rfi_df['Date'] = rfi_df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            # On repasse en numérique le temps d'une seconde pour que Pandas comprenne le timestamp
+            rfi_df['Date'] = pd.to_datetime(pd.to_numeric(rfi_df['Date'], errors='coerce'), unit='s')
+            
+            # Formatage final en texte propre pour le CSV
+            rfi_df['Date'] = rfi_df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
     return rfi_df
 
 
 def main():
 
-    ledger_filename = [
-        "kraken_all_trades",
-    ]
 
-    for ledger_filename in ledger_filename : 
-        print(f"----------- {ledger_filename} ------------")
-        ledger_filepath = config.DIR_0_ORIGINAL / f"{ledger_filename}.csv"
-        ready_for_ingest_filepath = config.DIR_1_RFI / f'{ledger_filename}_ready_for_ingest.csv'
-        ledger_df = pd.read_csv(ledger_filepath, sep=',')
-        rfi_df = convert_ledger_to_rfi(ledger_df)
-        rfi_df = improve_rfi_quality(rfi_df)
+    print(f"----------- kraken_all_trades ------------")
+    ledger_filepath = config.DIR_0_ORIGINAL / f"kraken_all_trades.csv"
+    ready_for_ingest_filepath = config.DIR_1_RFI / f'kraken_all_trades_ready_for_ingest.csv'
+    ledger_df = pd.read_csv(ledger_filepath, sep=',', dtype=str)
+    rfi_df = convert_ledger_to_rfi(ledger_df)
+    rfi_df = improve_rfi_quality(rfi_df)
 
-        # Export to csv
-        rfi_df.to_csv(ready_for_ingest_filepath, sep=',', index=False)
+    # Export to csv
+    rfi_df.to_csv(ready_for_ingest_filepath, sep=',', index=False)
 
 
 treated_ref_id = []

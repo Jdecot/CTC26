@@ -3,6 +3,9 @@ Data/
 Doc/
 test_script/
 trash/
+sauvegarde_fichier_transactions_originaux/
+debug/
+999_debug_extract_rows.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

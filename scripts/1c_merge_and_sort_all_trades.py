@@ -2,12 +2,19 @@ import pandas as pd
 import os
 import config
 
-
 def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
     
     ready_for_ingest_folder = config.DIR_1_RFI
     # Lisez et fusionnez les fichiers CSV dans un seul DataFrame
     df_list = []
+    
+    # On définit la liste des colonnes de montants pour forcer le type 'string'
+    amount_cols = [
+        "Received Amount", "Received Net Worth", 
+        "Sent Amount", "Sent Net Worth", 
+        "Fee Amount", "Fee Net Worth"
+    ]
+
     for file in csv_files_dict:
         print(file)
         file_path = os.path.join(ready_for_ingest_folder, file)
@@ -15,14 +22,15 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
         # Créer le fichier s'il n'existe pas
         if not os.path.exists(file_path):
             print(f"Le fichier {file_path} n'existe pas. Création d'un fichier vide.")
-            # Créer un DataFrame vide avec les bonnes colonnes
-            empty_df = pd.DataFrame(columns=["Date", "refid", "Detected Type", "Type", "subtype",
-            "Received Currency", "Received Amount", "Received Net Worth", 
-            "Sent Currency", "Sent Amount", "Sent Net Worth", 
-            "Fee Currency", "Fee Amount", "Fee Net Worth"])
+            empty_df = pd.DataFrame(columns=[
+                "Date", "refid", "Detected Type", "Type", "subtype",
+                "Received Currency", "Received Amount", "Received Net Worth", 
+                "Sent Currency", "Sent Amount", "Sent Net Worth", 
+                "Fee Currency", "Fee Amount", "Fee Net Worth"
+            ])
             empty_df.to_csv(file_path, sep=',', index=False)
 
-        df = pd.read_csv(file_path, sep=',')
+        df = pd.read_csv(file_path, sep=',', dtype={col: str for col in amount_cols})
         if csv_files_dict[file] == 'bitmart_2024' :
             print('bitmart !!!')
         
@@ -40,7 +48,7 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
 
     # Trie et export - éviter la notation scientifique pour les petits nombres
     df_sorted = df_merged.sort_values(by='Date')
-    df_sorted.to_csv(all_trades_ready_for_ingest_filepath, index=False, float_format='%.18f')
+    df_sorted.to_csv(all_trades_ready_for_ingest_filepath, index=False)
 
 
 csv_files_dict = config.MERGE_CONFIG

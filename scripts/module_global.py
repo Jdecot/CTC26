@@ -3,6 +3,26 @@ import os
 from datetime import datetime, timedelta
 import time
 import config
+from pathlib import Path
+
+def convert_csv_to_excel(csv_input_path, excel_output_path):
+    """
+    Converts a single CSV file to an Excel file.
+    Ensures the destination directory exists before writing.
+    """
+    try:
+        # Create parent directory if it does not exist
+        Path(excel_output_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        # Read CSV data and export to Excel format
+        # Standard comma separator used by default
+        data_frame = pd.read_csv(csv_input_path, sep=',')
+        data_frame.to_excel(excel_output_path, index=False)
+        return True
+    except Exception as error:
+        print(f"  ✗ Error during conversion of {csv_input_path}: {error}")
+        return False
+    
 
 def get_crypto_list_from_all_trades():
     

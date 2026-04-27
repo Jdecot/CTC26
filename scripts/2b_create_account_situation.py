@@ -95,6 +95,7 @@ for curr in all_currencies_mapped:
 asdf.loc[0] = init_row
 
 
+# Iterate over rfi
 for index, row in ready_for_ingest.iterrows():
     row_ready_for_ingest = ready_for_ingest.loc[index]
 
