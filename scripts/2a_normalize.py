@@ -26,7 +26,9 @@ def strict_normalize(asset, platform):
     return asset_clean
 
 def process_normalization(input_file, output_file):
-    df = pd.read_csv(input_file)
+    # On force la lecture en string (dtype=str) pour éviter que Pandas ne convertisse 
+    # les montants en flottants et n'introduise de la notation scientifique.
+    df = pd.read_csv(input_file, dtype=str)
     
     # Création des nouvelles colonnes normalized tout en gardant les originales
     mapping_tasks = {

@@ -32,8 +32,10 @@ def add_amount_to_curreny_in_row(row, currency, amount_to_add):
 def remove_amount_to_currency_in_row(row, currency, amount_to_remove):
     curr = get_mapped_currency(currency) # ON MAPPE ICI
     current_ammount = Decimal(str(row[curr]))
-    new_amount = current_ammount - Decimal(str(amount_to_remove))
-    row[curr] = new_amount
+    
+    # En soustrayant la valeur absolue, on gère à la fois les montants positifs (CRO) 
+    # et négatifs (Kraken) pour garantir une diminution du solde.
+    row[curr] = current_ammount - abs(Decimal(str(amount_to_remove)))
     return row
 
 
@@ -62,7 +64,7 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
     if pd.notna(sent_curr) and sent_curr != '' and row_ready_for_ingest['Detected Type'] != 'transfer':
         new_row = remove_amount_to_currency_in_row(new_row, sent_curr, sent_amount)
 
-    if pd.notna(fee_curr) and fee_curr != '' and Decimal(str(fee_amount)) > 0:
+    if pd.notna(fee_curr) and fee_curr != '' and Decimal(str(fee_amount)) != 0:
         new_row = remove_fee_from_currency_in_row(new_row, fee_curr, fee_amount)
 
     new_row["Date"] = row_ready_for_ingest["Date"]

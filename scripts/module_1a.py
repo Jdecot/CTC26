@@ -57,11 +57,11 @@ def Identify_fees(sent_row, receive_row) :
     # Define fees amount according to the row that paid fees
     if sent_row_fee != 0 :
         fees_dict['Fee Currency'] = sent_row['asset']
-        fees_dict['Fee Amount'] = abs(Decimal(str(sent_row['fee'])))
+        fees_dict['Fee Amount'] = Decimal(str(sent_row['fee']))
         fees_dict['Fee Row'] = 'sent_row'
     if receive_row_fee != 0 :
         fees_dict['Fee Currency'] = receive_row['asset']
-        fees_dict['Fee Amount'] = abs(Decimal(str(receive_row['fee'])))
+        fees_dict['Fee Amount'] = Decimal(str(receive_row['fee']))
         fees_dict['Fee Row'] = 'receive_row'
     
     return fees_dict
@@ -85,7 +85,7 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
 
     # Case when buy crypto, fees in euros, add fees to sent amount (fees has been convert to positive value) to get total sent amount
     elif (transaction_type == 'buy') & (fees_data['Fee Currency'] == 'EUR') & (fees_data['Fee Row'] == 'sent_row'):
-        sent_row['amount'] = Decimal(str(sent_row['amount'])) + fees_data['Fee Amount']
+        sent_row['amount'] = Decimal(str(sent_row['amount'])) - fees_data['Fee Amount']
 
     # Case when sell crypto, fees in euros, remove fees from received amount (fees has been convert to positive value) to get total received amount
     elif (transaction_type == 'sell') & (fees_data['Fee Currency'] == 'EUR') & (fees_data['Fee Row'] == 'receive_row') :
@@ -93,7 +93,7 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
 
     # Case when trade crypto for another one, fees in the sent row, add fees to sent amount to get total amount sent
     elif (transaction_type == 'trade') & (fees_data['Fee Row'] == 'sent_row') :
-        sent_row['amount'] = Decimal(str(sent_row['amount'])) + fees_data['Fee Amount']
+        sent_row['amount'] = Decimal(str(sent_row['amount'])) - fees_data['Fee Amount']
     
     # Case when trade crypto for another one, fees in the receive row, remove fees from received amount to get total amount received
     elif (transaction_type == 'trade') & (fees_data['Fee Row'] == 'receive_row') :
@@ -171,10 +171,11 @@ def Convert_reward_stack_or_other(row):
     There should be no fees associated with any receive transactions, but we advise that you double check the transaction details
     """
 
-
-
-    # Compute the real value received, fee is a negative value so we add
-    value_received_minus_fees = Decimal(str(row['amount'])) + Decimal(str(row['fee']))
+    # Pour les récompenses, on garde le montant tel quel moins les frais 
+    # (si les frais sont positifs, ça réduit le reçu. Si c'est un remboursement négatif, ça l'augmente).
+    # Le montant net reçu est égal au montant brut moins les frais.
+    # Cela gère aussi les remboursements si les frais étaient négatifs.
+    value_received_minus_fees = Decimal(str(row['amount'])) - Decimal(str(row['fee']))
 
     new_row = pd.Series({
         'Date' : row['time'], 
