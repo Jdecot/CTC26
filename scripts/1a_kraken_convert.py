@@ -26,8 +26,8 @@ def treat_row_v2(ledger_df, row):
 
     elif transaction_kind == 'transfer' :
         treated_lines["transfert_line_ignored"] += 1
-        if float(row['fee']) > 0 : # fl
-            print("Transfer - corriger : fee supérieur à 0 pas prise en compte : ",  row)
+        if Decimal(str(row['fee'])) > 0:
+            print("Transfer - corriger : fee supérieur à 0 pas prise en compte : ", row)
 
     # All buy or send appears in two lines, one for the currency sold and one for the currency bought
     # It's necessary to merge them. The two lines shares the same refid.
@@ -77,37 +77,6 @@ def export_deposit_withdraw_csv(df):
     filtered_df = df.loc[(df['type'] == 'deposit') | (df['type'] == 'withdrawal')]
     filtered_df.to_csv(depo_width_filepath, sep=',', index=False)
 
-
-# def convert_columns_to_positive_values(df, cols_to_modify):
-#     """
-#     Convertit les colonnes spécifiées en valeurs positives.
-#     Affiche les détails en cas d'erreur de conversion.
-#     """
-#     for column in cols_to_modify:
-#         if column in df.columns:
-#             # On utilise une boucle plus classique pour accéder facilement à l'index et aux autres colonnes
-#             for index, row in df.iterrows():
-#                 val = row[column]
-                
-#                 # On ignore les valeurs déjà vides
-#                 if pd.isna(val) or str(val).strip() == "":
-#                     continue
-                
-#                 try:
-#                     # Tentative de conversion
-#                     df.at[index, column] = abs(Decimal(str(val)))
-#                 except Exception:
-#                     # Affichage des détails si ça plante
-#                     date_val = row.get('Date', 'N/A')
-#                     print(f"⚠️ Erreur de conversion !")
-#                     print(f"   - Colonne : {column}")
-#                     print(f"   - Index   : {index}")
-#                     print(f"   - Date    : {date_val}")
-#                     print(f"   - Valeur  : '{val}'")
-#                     print(f"-------------------------")
-#                     # On laisse la valeur telle quelle pour ne pas bloquer le script
-    
-#     return df
 
 
 def convert_ledger_to_rfi(ledger_df):
@@ -160,8 +129,7 @@ def convert_ledger_to_rfi(ledger_df):
 
 
 def improve_rfi_quality(rfi_df):
-    # rfi_df = convert_columns_to_positive_values(rfi_df.copy(), [])
-    # Plus besoin de convertir les colonnes en positif, on gère les signes naturellement
+    """Finalise la qualité des données (dates, types, etc.)"""
 
     # Convert timestamp to datetime format if Date column contains numeric timestamps
     if 'Date' in rfi_df.columns:

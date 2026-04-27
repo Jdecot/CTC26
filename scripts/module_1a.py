@@ -16,11 +16,11 @@ def Identify_transaction_type(sent_row, receive_row):
     sent_row_asset = sent_row['asset']
     receive_row_asset = receive_row['asset']
 
-    if (sent_row_asset != 'EUR') & (receive_row_asset != 'EUR'):
+    if sent_row_asset != 'EUR' and receive_row_asset != 'EUR':
         transaction_type = 'trade'
-    elif (sent_row_asset == 'EUR') & (receive_row_asset != 'EUR'):
+    elif sent_row_asset == 'EUR' and receive_row_asset != 'EUR':
         transaction_type = 'buy'
-    elif (sent_row_asset != 'EUR') & (receive_row_asset == 'EUR'):
+    elif sent_row_asset != 'EUR' and receive_row_asset == 'EUR':
         transaction_type = 'sell'
     else:
     # Lever une exception si aucune des conditions n'est remplie
@@ -37,11 +37,11 @@ def Identify_fees(sent_row, receive_row) :
     Si les deux lignes ont payé des fees ce n'est pas normal (à priori)
     """
     # Identify the fee amount of each provided row
-    sent_row_fee = float(sent_row['fee'])
-    receive_row_fee = float(receive_row['fee'])
+    sent_row_fee = Decimal(str(sent_row['fee']))
+    receive_row_fee = Decimal(str(receive_row['fee']))
 
     # Raise error if both row have paid fees
-    if (sent_row_fee != 0) & (receive_row_fee != 0) :
+    if sent_row_fee != 0 and receive_row_fee != 0:
        raise ValueError("Deux lignes ayant le même refid ont des fees (wtf ?), attention modifier le code")
 
 
@@ -80,24 +80,23 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
     """
 
     # Case when buy crypto, fees in crypto, remove fees from received amount (fees has been convert to positive value) to get total received amount
-    if (transaction_type == 'buy') & (fees_data['Fee Currency'] != 'EUR') & (fees_data['Fee Row'] == 'receive_row'):
+    if transaction_type == 'buy' and fees_data['Fee Currency'] != 'EUR' and fees_data['Fee Row'] == 'receive_row':
         receive_row['amount'] = Decimal(str(receive_row['amount'])) + fees_data['Fee Amount']
 
     # Case when buy crypto, fees in euros, add fees to sent amount (fees has been convert to positive value) to get total sent amount
-    elif (transaction_type == 'buy') & (fees_data['Fee Currency'] == 'EUR') & (fees_data['Fee Row'] == 'sent_row'):
+    elif transaction_type == 'buy' and fees_data['Fee Currency'] == 'EUR' and fees_data['Fee Row'] == 'sent_row':
         sent_row['amount'] = Decimal(str(sent_row['amount'])) - fees_data['Fee Amount']
 
     # Case when sell crypto, fees in euros, remove fees from received amount (fees has been convert to positive value) to get total received amount
-    elif (transaction_type == 'sell') & (fees_data['Fee Currency'] == 'EUR') & (fees_data['Fee Row'] == 'receive_row') :
+    elif transaction_type == 'sell' and fees_data['Fee Currency'] == 'EUR' and fees_data['Fee Row'] == 'receive_row':
         pass
 
     # Case when trade crypto for another one, fees in the sent row, add fees to sent amount to get total amount sent
-    elif (transaction_type == 'trade') & (fees_data['Fee Row'] == 'sent_row') :
+    elif transaction_type == 'trade' and fees_data['Fee Row'] == 'sent_row':
         sent_row['amount'] = Decimal(str(sent_row['amount'])) - fees_data['Fee Amount']
     
     # Case when trade crypto for another one, fees in the receive row, remove fees from received amount to get total amount received
-    elif (transaction_type == 'trade') & (fees_data['Fee Row'] == 'receive_row') :
-        # receive_row['amount'] += fees_data['Fee Amount']
+    elif transaction_type == 'trade' and fees_data['Fee Row'] == 'receive_row':
         pass
 
 
@@ -111,7 +110,7 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
     return sent_row, receive_row
 
 
-def Create_one_row_from_two(same_refid_df) :
+def Create_one_row_from_two(same_refid_df):
     """
     Only two row in the provided df, we are going to merge them as a new_row
     """
@@ -119,7 +118,7 @@ def Create_one_row_from_two(same_refid_df) :
     sent_row = same_refid_df.loc[same_refid_df['type'] == 'spend'].to_dict(orient='records')[0]
     receive_row = same_refid_df.loc[same_refid_df['type'] == 'receive'].to_dict(orient='records')[0]
 
-    # # Identify transaction type
+    # Identify transaction type
     transaction_type = Identify_transaction_type(sent_row, receive_row)
 
     fees_data = Identify_fees(sent_row, receive_row)
@@ -149,10 +148,11 @@ def Create_one_row_from_two(same_refid_df) :
 def Convert_two_trade_row(same_refid_df):
 
     for index, row in same_refid_df.iterrows() : 
-        # Convert negative amount value to positive and set type as spend
-        if float(row["amount"]) < 0:
+        # On identifie spend/receive sur la base du signe du montant Kraken
+        amt = Decimal(str(row["amount"]))
+        if amt < 0:
             same_refid_df.at[index, "type"] = 'spend'
-        elif float(row["amount"]) > 0:
+        elif amt > 0:
             same_refid_df.at[index, "type"] = 'receive'
         else : 
             raise ValueError("Une transaction ne peut pas avoir un amount de 0")
@@ -268,7 +268,7 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
             'Type' : s_row['type'],
             'Detected Type': 'trade',
             'Received Currency': 'DUST_VIRTUAL',
-            'Received Amount': 0.0, # On pourra mettre 1.0 ou laisser 0 car c'est neutre
+            'Received Amount': Decimal('0'), # On utilise Decimal pour la cohérence
             'Received Net Worth': '',
             'Sent Currency': s_row['asset'],
             'Sent Amount': Decimal(str(s_row['amount'])), # On passe en positif pour le format cible
@@ -291,7 +291,7 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
         'Received Amount': Decimal(str(receive_row['amount'])),
         'Received Net Worth': '',
         'Sent Currency': 'DUST_VIRTUAL',
-        'Sent Amount': 0.0, # Équilibrage virtuel
+        'Sent Amount': Decimal('0'), # Équilibrage virtuel
         'Sent Net Worth': '',
         'Fee Currency': receive_row['asset'],
         'Fee Amount': Decimal(str(receive_row['fee'])),
