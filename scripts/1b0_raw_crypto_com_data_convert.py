@@ -33,10 +33,10 @@ def Convert_crypto_exchange(row):
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'trade', 
         'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
+        'Received Amount' : Decimal(str(row['To Amount'])), 
         'Received Net Worth' : '', 
         'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
+        'Sent Amount' : Decimal(str(row['Amount'])), 
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
@@ -56,10 +56,10 @@ def Convert_crypto_viban_exchange(row):
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'sell', 
         'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
+        'Received Amount' : Decimal(str(row['To Amount'])), 
         'Received Net Worth' : '', 
         'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
+        'Sent Amount' : Decimal(str(row['Amount'])), 
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
@@ -94,7 +94,7 @@ def Convert_crypto_withdrawal(row):
         'Received Amount' : '',    # On vide comme demandé
         'Received Net Worth' : '', 
         'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'] + row['Fee Amount'], 
+        'Sent Amount' : Decimal(str(row['Amount'])) + Decimal(str(row['Fee Amount'])), 
         'Sent Net Worth' : '', 
         'Fee Currency' : row['Fee Currency'], 
         'Fee Amount' : row['Fee Amount'], 
@@ -113,7 +113,7 @@ def Convert_reward_stack_or_other(row):
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'reward', 
         'Received Currency' : row['Currency'], 
-        'Received Amount' : row['Amount'], 
+        'Received Amount' : Decimal(str(row['Amount'])), 
         'Received Net Worth' : '', 
         'Sent Currency' : '', 
         'Sent Amount' : '' ,
@@ -137,10 +137,10 @@ def Convert_stake_unstake(row):
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'transfer', 
         'Received Currency' : row['Currency'], 
-        'Received Amount' : row['Amount'], 
+        'Received Amount' : Decimal(str(row['Amount'])), 
         'Received Net Worth' : '', 
         'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
+        'Sent Amount' : Decimal(str(row['Amount'])), 
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
@@ -159,10 +159,10 @@ def Convert_buy(row):
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'buy', 
         'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
+        'Received Amount' : Decimal(str(row['To Amount'])), 
         'Received Net Worth' : '', 
         'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
+        'Sent Amount' : Decimal(str(row['Amount'])), 
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
@@ -185,10 +185,10 @@ def Convert_buy_google_pay(row):
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'buy', 
         'Received Currency' : row['Currency'], 
-        'Received Amount' : row['Amount'], 
+        'Received Amount' : Decimal(str(row['Amount'])), 
         'Received Net Worth' : '', 
         'Sent Currency' : row['Native Currency'], 
-        'Sent Amount' : row['Native Amount'], 
+        'Sent Amount' : Decimal(str(row['Native Amount'])), 
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
@@ -215,10 +215,10 @@ def Convert_dust_conversion_debited(row):
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'trade', 
         'Received Currency' : row['To Currency'], 
-        'Received Amount' : row['To Amount'], 
+        'Received Amount' : Decimal(str(row['To Amount'])), 
         'Received Net Worth' : '', 
         'Sent Currency' : row['Currency'], 
-        'Sent Amount' : row['Amount'], 
+        'Sent Amount' : Decimal(str(row['Amount'])), 
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
@@ -240,9 +240,11 @@ def main():
     # Utilisation de sep=None pour détecter automatiquement virgule ou point-virgule.
     # On nettoie les noms de colonnes (strip) pour supprimer les espaces invisibles.
     print(f"Chargement de la source : {config.FILE_CRYPTOCOM_REWORKED_SOURCE}")
-    original_df = pd.read_csv(config.FILE_CRYPTOCOM_REWORKED_SOURCE, sep=None, engine='python')
+    # On force la lecture en texte (str) pour ne perdre aucune décimale LINK
+    original_df = pd.read_csv(config.FILE_CRYPTOCOM_REWORKED_SOURCE, sep=None, engine='python', dtype=str)
     original_df.columns = original_df.columns.str.strip()
-    original_df = original_df.fillna(0) # Sécurité pour les calculs de montants
+    # On remplace les vides par '0' en texte pour les calculs Decimal
+    original_df = original_df.fillna('0')
 
     # print(original_df.head())
     new_df = pd.DataFrame(columns=["Date", "Type", "Received Currency",	"Received Amount", "Received Net Worth", "Sent Currency", "Sent Amount", "Sent Net Worth", "Fee Currency", "Fee Amount", "Fee Net Worth"])
@@ -306,7 +308,7 @@ def main():
     # Convert columns to positive values (because no negative values allowed)
     def format_value(x):
         if pd.isna(x) or x == "" or x == 0:
-            return ""  # Replace NaN with empty string
+            return "0"  # Utilise '0' pour éviter les calculs invalides plus tard
         else:
             # On utilise Decimal pour garantir un affichage propre sans notation scientifique ni erreurs de float
             d = Decimal(str(x))

@@ -205,7 +205,8 @@ def show_holdings():
     for col in df.columns:
         try:
             val = Decimal(str(last_row[col]))
-            if val > 0:
+            # On affiche tout ce qui n'est pas zéro et qui est un nombre fini (pas NaN)
+            if val.is_finite() and val != 0:
                 holdings[col] = val
         except (ValueError, TypeError, InvalidOperation):
             # Ignore les colonnes non numériques ou valeurs non convertibles

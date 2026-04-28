@@ -149,6 +149,10 @@ def main():
     ledger_filepath = config.DIR_0_ORIGINAL / f"kraken_all_trades.csv"
     ready_for_ingest_filepath = config.DIR_1_RFI / f'kraken_all_trades_ready_for_ingest.csv'
     ledger_df = pd.read_csv(ledger_filepath, sep=',', dtype=str)
+    
+    # On remplace les NaN par '0' pour éviter la propagation de NaN dans les calculs Decimal
+    ledger_df = ledger_df.fillna('0')
+
     rfi_df = convert_ledger_to_rfi(ledger_df)
     rfi_df = improve_rfi_quality(rfi_df)
 
