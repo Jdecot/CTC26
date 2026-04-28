@@ -14,6 +14,7 @@ SCRIPTS_DIR = BASE_DIR / "scripts"
 
 scripts = [
     "1a_kraken_convert.py",
+    "1b0_raw_crypto_com_data_convert.py",
     "1b_crypto_com_convert_date.py", 
     "1c_merge_and_sort_all_trades.py",
     "2a_normalize.py",
