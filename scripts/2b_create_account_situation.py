@@ -58,10 +58,10 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
     sent_curr = row_ready_for_ingest["Sent Currency"]
     fee_curr = row_ready_for_ingest["Fee Currency"]
 
-    if pd.notna(rec_curr) and rec_curr != '':
+    if pd.notna(rec_curr) and rec_curr != '' and row_ready_for_ingest['Detected Type'] not in ['transfer', 'deposit', 'withdrawal']:
         new_row = add_amount_to_curreny_in_row(new_row, rec_curr, rec_amount)
     
-    if pd.notna(sent_curr) and sent_curr != '':
+    if pd.notna(sent_curr) and sent_curr != '' and row_ready_for_ingest['Detected Type'] not in ['transfer', 'deposit', 'withdrawal']:
         new_row = remove_amount_to_currency_in_row(new_row, sent_curr, sent_amount)
 
     if pd.notna(fee_curr) and fee_curr != '' and Decimal(str(fee_amount)) != 0:
@@ -101,7 +101,7 @@ asdf.loc[0] = init_row
 for index, row in ready_for_ingest.iterrows():
     row_ready_for_ingest = ready_for_ingest.loc[index]
 
-    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade','transfer'] :
+    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'transfer', 'reward', 'deposit', 'withdrawal']:
         if test_if_trade_EURvsUSD(row_ready_for_ingest) :
             asdf_last_row = asdf.iloc[-1].copy()
             asdf_last_row['Detected Type'] = 'trade_between_currency'

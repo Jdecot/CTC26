@@ -204,9 +204,16 @@ def show_holdings():
     holdings = {}
     for col in df.columns:
         try:
-            val = Decimal(str(last_row[col]))
-            # On affiche tout ce qui n'est pas zéro et qui est un nombre fini (pas NaN)
-            if val.is_finite() and val != 0:
+            raw_val = str(last_row[col]).strip()
+            # On ignore les colonnes vides ou contenant 'nan' pour éviter les erreurs de tri
+            if raw_val == "" or raw_val.lower() == "nan":
+                continue
+                
+            val = Decimal(raw_val)
+            # On ne garde que les nombres finis (pas NaN, pas Infini) et non nuls
+            if not val.is_finite():
+                continue
+            if val != Decimal('0'):
                 holdings[col] = val
         except (ValueError, TypeError, InvalidOperation):
             # Ignore les colonnes non numériques ou valeurs non convertibles
