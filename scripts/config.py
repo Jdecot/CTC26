@@ -19,6 +19,9 @@ DIR_EXCEL = DATA_DIR / "excel"
 # Fichiers spécifiques
 FILE_KRAKEN_ALL_TRADES = DIR_0_ORIGINAL / "kraken_all_trades.csv"
 FILE_CRYPTOCOM_2023 = DIR_0_ORIGINAL / "cryptocom_2023_ready_for_ingest.csv"
+FILE_CRYPTOCOM_REWORKED_SOURCE = DIR_0_ORIGINAL / "cryptoapp_2023_reworked.csv"
+FILE_CRYPTOCOM_RAW = DIR_0_ORIGINAL / "crypto_enregistrement_transactions_20240218_212641.csv"
+FILE_CRYPTOCOM_RFI_V2 = DIR_1_RFI / "cryptocom_2023_ready_for_ingest.csv"
 FILE_BITMART_2024 = DIR_0_ORIGINAL / "bitmart_2024.csv"
 
 FILE_ALL_TRADES = DIR_1_RFI / "all_trades.csv"
@@ -86,4 +89,3 @@ KRAKEN_CRYPTO_ID = {
     # --- ACTIF VIRTUEL ---
     "DUST_VIRTUAL": "DUST_VIRTUAL"
 }
-

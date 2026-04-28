@@ -1,6 +1,7 @@
 import pandas as pd
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
+from decimal import Decimal, InvalidOperation
 import time
 import config
 from pathlib import Path
@@ -193,21 +194,20 @@ def show_holdings():
         print(f"⚠️  Fichier non trouvé : {csv_path}")
         return
     
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, dtype=str)
     if df.empty:
         print("⚠️  Le fichier account_situation.csv est vide")
         return
     
     last_row = df.iloc[-1]
     
-    # Convertir toutes les valeurs en numérique (les erreurs deviennent NaN)
     holdings = {}
     for col in df.columns:
         try:
-            val = float(last_row[col])
+            val = Decimal(str(last_row[col]))
             if val > 0:
                 holdings[col] = val
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, InvalidOperation):
             # Ignore les colonnes non numériques ou valeurs non convertibles
             pass
     

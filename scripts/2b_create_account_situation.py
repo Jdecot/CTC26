@@ -58,10 +58,10 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
     sent_curr = row_ready_for_ingest["Sent Currency"]
     fee_curr = row_ready_for_ingest["Fee Currency"]
 
-    if pd.notna(rec_curr) and rec_curr != '' and row_ready_for_ingest['Detected Type'] != 'transfer' :
+    if pd.notna(rec_curr) and rec_curr != '':
         new_row = add_amount_to_curreny_in_row(new_row, rec_curr, rec_amount)
     
-    if pd.notna(sent_curr) and sent_curr != '' and row_ready_for_ingest['Detected Type'] != 'transfer':
+    if pd.notna(sent_curr) and sent_curr != '':
         new_row = remove_amount_to_currency_in_row(new_row, sent_curr, sent_amount)
 
     if pd.notna(fee_curr) and fee_curr != '' and Decimal(str(fee_amount)) != 0:

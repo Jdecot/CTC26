@@ -26,7 +26,7 @@ def treat_row_v2(ledger_df, row):
 
     elif transaction_kind == 'transfer' :
         treated_lines["transfert_line_ignored"] += 1
-        if Decimal(str(row['fee'])) > 0:
+        if Decimal(str(row['fee'])) != 0:
             print("Transfer - corriger : fee supérieur à 0 pas prise en compte : ", row)
 
     # All buy or send appears in two lines, one for the currency sold and one for the currency bought

@@ -31,7 +31,7 @@ def main(ready_for_ingest_filepath, reworked_df):
     print(f"Fichier exporté vers {reworked_df}")
 
 
-ready_for_ingest_filepath = config.FILE_CRYPTOCOM_2023
+ready_for_ingest_filepath = config.FILE_CRYPTOCOM_RFI_V2
 reworked_df = config.DIR_1_RFI / 'cryptocom_2023_ready_for_ingest_date_reworked.csv'
 
 main(ready_for_ingest_filepath, reworked_df)

@@ -80,7 +80,7 @@ def main(enriched_situation_path, account_situation_path):
     
 
     # Get and set df
-    asdf = pd.read_csv(account_situation_path, sep=',')
+    asdf = pd.read_csv(account_situation_path, sep=',', dtype=str)
     enriched_situation = asdf.copy(deep=True)
     enriched_situation = add_price_columns(enriched_situation, crypto_used_list)
 
