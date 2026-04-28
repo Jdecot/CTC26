@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import openpyxl
+from decimal import Decimal
 import config
 
 dict_transaction_kind_to_type = {
@@ -89,8 +90,8 @@ def Convert_crypto_withdrawal(row):
     new_row = pd.Series({
         'Date' : row['Timestamp (UTC)'], 
         'Type' : 'transfer', 
-        'Received Currency' : row['Currency'], 
-        'Received Amount' : row['Amount'] + row['Fee Amount'], 
+        'Received Currency' : '', # On vide comme demandé
+        'Received Amount' : '',    # On vide comme demandé
         'Received Net Worth' : '', 
         'Sent Currency' : row['Currency'], 
         'Sent Amount' : row['Amount'] + row['Fee Amount'], 
@@ -304,17 +305,16 @@ def main():
 
     # Convert columns to positive values (because no negative values allowed)
     def format_value(x):
-        if pd.isna(x):
+        if pd.isna(x) or x == "" or x == 0:
             return ""  # Replace NaN with empty string
         else:
-            return f"{x:.10f}" 
+            # On utilise Decimal pour garantir un affichage propre sans notation scientifique ni erreurs de float
+            d = Decimal(str(x))
+            return f"{d:f}" 
         
-    pd.set_option('display.float_format', '{:.10f}'.format)
     for column_to_modify in ['Received Amount', 'Sent Amount', 'Fee Amount']:
-        new_df[column_to_modify] = pd.to_numeric(new_df[column_to_modify], errors='coerce')
-        new_df[column_to_modify] = np.abs(new_df[column_to_modify])
+        # Plus besoin de to_numeric (qui crée des approximations), on applique le formatage Decimal
         new_df[column_to_modify] = new_df[column_to_modify].apply(format_value)
-
 
 
     # Export to csv
