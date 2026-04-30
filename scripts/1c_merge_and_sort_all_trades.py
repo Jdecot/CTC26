@@ -12,7 +12,8 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
     amount_cols = [
         "Received Amount", "Received Net Worth", 
         "Sent Amount", "Sent Net Worth", 
-        "Fee Amount", "Fee Net Worth"
+        "Fee Amount", "Fee Net Worth",
+        "Balance"
     ]
 
     for file in csv_files_dict:
@@ -26,13 +27,17 @@ def main(csv_files_dict, all_trades_ready_for_ingest_filepath):
                 "Date", "refid", "Detected Type", "Type", "subtype",
                 "Received Currency", "Received Amount", "Received Net Worth", 
                 "Sent Currency", "Sent Amount", "Sent Net Worth", 
-                "Fee Currency", "Fee Amount", "Fee Net Worth"
+                "Fee Currency", "Fee Amount", "Fee Net Worth",
+                "Balance"
             ])
             empty_df.to_csv(file_path, sep=',', index=False)
 
         df = pd.read_csv(file_path, sep=',', dtype={col: str for col in amount_cols})
-        if csv_files_dict[file] == 'bitmart_2024' :
-            print('bitmart !!!')
+
+        # Gestion dynamique de la colonne Balance si absente
+        if 'Balance' not in df.columns:
+            print(f"  -> Ajout d'une colonne Balance vide pour {file}")
+            df['Balance'] = ''
         
         # Skip empty dataframes
         if df.empty:

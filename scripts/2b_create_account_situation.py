@@ -67,12 +67,9 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
     if pd.notna(fee_curr) and fee_curr != '' and Decimal(str(fee_amount)) != 0:
         new_row = remove_fee_from_currency_in_row(new_row, fee_curr, fee_amount)
 
-    new_row["Date"] = row_ready_for_ingest["Date"]
-    new_row["Platform"] = row_ready_for_ingest["platform"]
-    new_row["refid"] = row_ready_for_ingest["refid"]
-    new_row["subtype"] = row_ready_for_ingest["subtype"]
-    new_row["Type"] = row_ready_for_ingest["Type"]
-    new_row["Detected Type"] = row_ready_for_ingest['Detected Type']
+    # Recopie de toutes les colonnes de détails de la transaction (Metadata + Amounts + Balance)
+    for col in row_ready_for_ingest.index:
+        new_row[col] = row_ready_for_ingest[col]
 
     return new_row
 
@@ -88,7 +85,9 @@ all_currencies_raw = set(ready_for_ingest["Received Currency"].dropna()) | \
 
 all_currencies_mapped = set([get_mapped_currency(c) for c in all_currencies_raw if c != ""])
 
-asdf = pd.DataFrame(columns=list(ready_for_ingest.columns) + list(all_currencies_mapped))
+# Ensure 'Balance' column is included in asdf, along with other RFI columns and mapped currencies
+asdf_columns = list(ready_for_ingest.columns) + list(all_currencies_mapped)
+asdf = pd.DataFrame(columns=asdf_columns)
 
 # Initialisation ligne 0
 init_row = {col: "" for col in asdf.columns}
@@ -104,13 +103,10 @@ for index, row in ready_for_ingest.iterrows():
     if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'transfer', 'reward', 'deposit', 'withdrawal']:
         if test_if_trade_EURvsUSD(row_ready_for_ingest) :
             asdf_last_row = asdf.iloc[-1].copy()
+            # On recopie les détails même pour les échanges FIAT/FIAT
+            for col in row_ready_for_ingest.index:
+                asdf_last_row[col] = row_ready_for_ingest[col]
             asdf_last_row['Detected Type'] = 'trade_between_currency'
-            asdf_last_row["Date"] = row_ready_for_ingest["Date"]
-            asdf_last_row["Platform"] = row_ready_for_ingest["platform"]
-            asdf_last_row["refid"] = row_ready_for_ingest["refid"]
-            asdf_last_row["subtype"] = row_ready_for_ingest["subtype"]
-            asdf_last_row["Type"] = row_ready_for_ingest["Type"]
-            asdf.loc[len(asdf)] = asdf_last_row
         else : 
             asdf_last_row = asdf.iloc[-1].copy()
             new_row = add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row)

@@ -51,7 +51,7 @@ MERGE_CONFIG = {
 
 # --- CONFIGURATION COLLECTE KRAKEN ---
 KRAKEN_START_DATE = "2023-01-01"
-KRAKEN_END_DATE = "2026-04-06"
+KRAKEN_END_DATE = "2026-05-01"
 # On utilise le chemin déjà défini DIR_0_ORIGINAL pour la cohérence
 KRAKEN_COLLECT_OUTPUT_FILE = DIR_0_ORIGINAL / "kraken_all_trades.csv"
 

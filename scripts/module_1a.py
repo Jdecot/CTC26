@@ -139,7 +139,8 @@ def Create_one_row_from_two(same_refid_df):
         'Sent Net Worth' : '', 
         'Fee Currency' : fees_data['Fee Currency'], 
         'Fee Amount' : fees_data['Fee Amount'], 
-        'Fee Net Worth' : fees_data['Fee Net Worth']
+        'Fee Net Worth' : fees_data['Fee Net Worth'],
+        'Balance': receive_row['balance']
     }
 
     return new_row
@@ -191,7 +192,8 @@ def Convert_reward_stack_or_other(row):
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
-        'Fee Net Worth' : ''
+        'Fee Net Worth' : '',
+        'Balance': row['balance']
     })
     return new_row
     
@@ -211,7 +213,8 @@ def Convert_kraken_withdrawal(row):
         'Sent Net Worth' : '', 
         'Fee Currency' : row['asset'], 
         'Fee Amount' : row['fee'], 
-        'Fee Net Worth' : ''
+        'Fee Net Worth' : '',
+        'Balance': row['balance']
     })
     return new_row
 
@@ -240,7 +243,8 @@ def Convert_kraken_deposit(row):
         'Sent Net Worth' : '', 
         'Fee Currency' : '', 
         'Fee Amount' : '', 
-        'Fee Net Worth' : ''
+        'Fee Net Worth' : '',
+        'Balance': row['balance']
     })
     return new_row
 
@@ -276,6 +280,7 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
             'Fee Currency': s_row['asset'], # Souvent 0 sur Kraken pour les dusts
             'Fee Amount': Decimal(str(s_row['fee'])),
             'Fee Net Worth': '',
+            'Balance': s_row['balance'] # Add balance for the spent asset
         }
         new_rows.append(dust_part_row)
 
@@ -296,6 +301,7 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
         'Fee Currency': receive_row['asset'],
         'Fee Amount': Decimal(str(receive_row['fee'])),
         'Fee Net Worth': '',
+        'Balance': receive_row['balance'] # Add balance for the received asset
     }
     new_rows.append(final_receive_row)
 
