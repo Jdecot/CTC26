@@ -25,7 +25,15 @@ def treat_row_v2(ledger_df, row):
         treated_lines["withdrawal_eur_ignored"] += 1
 
     elif transaction_kind == 'transfer' :
-        treated_lines["transfert_line_ignored"] += 1
+        
+        if row['subtype'] == 'delistingconversion':
+            print('delisting !!')
+            new_rows.append(Convert_kraken_delisting(row).to_dict())
+        elif row['subtype'] == '':
+            print('migration fusion !')
+            new_rows.append(Convert_kraken_migration(row).to_dict())
+        else : 
+            treated_lines["transfert_line_ignored"] += 1
         if Decimal(str(row['fee'])) != 0:
             print("Transfer - corriger : fee supérieur à 0 pas prise en compte : ", row)
 
@@ -151,8 +159,10 @@ def main():
     ready_for_ingest_filepath = config.DIR_1_RFI / f'kraken_all_trades_ready_for_ingest.csv'
     ledger_df = pd.read_csv(ledger_filepath, sep=',', dtype=str)
     
-    # On remplace les NaN par '0' pour éviter la propagation de NaN dans les calculs Decimal
-    ledger_df = ledger_df.fillna('0')
+    # On cible les colonnes numériques pour le '0', et les autres pour le vide '' (comme subtype)
+    num_cols = ['amount', 'fee', 'balance']
+    ledger_df[num_cols] = ledger_df[num_cols].fillna('0')
+    ledger_df = ledger_df.fillna('')
 
     rfi_df = convert_ledger_to_rfi(ledger_df)
     rfi_df = improve_rfi_quality(rfi_df)

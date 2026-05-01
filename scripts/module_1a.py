@@ -93,7 +93,7 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
 
     # Case when trade crypto for another one, fees in the sent row, add fees to sent amount to get total amount sent
     elif transaction_type == 'trade' and fees_data['Fee Row'] == 'sent_row':
-        sent_row['amount'] = Decimal(str(sent_row['amount'])) - fees_data['Fee Amount']
+        sent_row['amount'] = Decimal(str(sent_row['amount'])) 
     
     # Case when trade crypto for another one, fees in the receive row, remove fees from received amount to get total amount received
     elif transaction_type == 'trade' and fees_data['Fee Row'] == 'receive_row':
@@ -199,17 +199,32 @@ def Convert_reward_stack_or_other(row):
     
 
 def Convert_kraken_withdrawal(row):
+    amount = Decimal(str(row['amount']))
+    
+    if amount <= 0:
+        # Cas standard d'un retrait (montant négatif ou nul)
+        rec_curr = ''
+        rec_amount = ''
+        sent_curr = row['asset']
+        sent_amount = amount
+    else:
+        # Cas d'un retrait positif (ex: remboursement car échoué)
+        rec_curr = row['asset']
+        rec_amount = amount
+        sent_curr = ''
+        sent_amount = ''
+
     new_row = pd.Series({
         'Date' : row['time'], 
         'refid' : row['refid'],
         'subtype' : row['subtype'],
         'Type' : row['type'],
         'Detected Type' : 'transfer',
-        'Received Currency' : '', 
-        'Received Amount' : '', 
+        'Received Currency' : rec_curr, 
+        'Received Amount' : rec_amount, 
         'Received Net Worth' : '', 
-        'Sent Currency' : row['asset'], 
-        'Sent Amount' : row['amount'], 
+        'Sent Currency' : sent_curr, 
+        'Sent Amount' : sent_amount, 
         'Sent Net Worth' : '', 
         'Fee Currency' : row['asset'], 
         'Fee Amount' : row['fee'], 
@@ -306,3 +321,76 @@ def Convert_dustsweeping_into_several_rows(same_refid_df):
     new_rows.append(final_receive_row)
 
     return new_rows
+
+
+
+def Convert_kraken_delisting(row):
+
+
+    amount = Decimal(str(row['amount']))
+    
+    if amount <= 0:
+        # Cas de la suppression suite au delisting 
+        rec_curr = ''
+        rec_amount = ''
+        sent_curr = row['asset']
+        sent_amount = amount
+    else:
+        # Cas du remboursement suite au delisting 
+        rec_curr = row['asset']
+        rec_amount = amount
+        sent_curr = ''
+        sent_amount = ''
+
+    new_row = pd.Series({
+        'Date' : row['time'], 
+        'refid' : row['refid'],
+        'subtype' : row['subtype'],
+        'Type' : row['type'],
+        'Detected Type' : 'delisting',
+        'Received Currency' : rec_curr, 
+        'Received Amount' : rec_amount, 
+        'Received Net Worth' : '', 
+        'Sent Currency' : sent_curr, 
+        'Sent Amount' : sent_amount, 
+        'Sent Net Worth' : '', 
+        'Fee Currency' : row['asset'], 
+        'Fee Amount' : row['fee'], 
+        'Fee Net Worth' : '',
+        'Balance': row['balance']
+    })
+    return new_row
+
+
+def Convert_kraken_migration(row):
+    amount = Decimal(str(row['amount']))
+    
+    if amount <= 0:
+        rec_curr = ''
+        rec_amount = ''
+        sent_curr = row['asset']
+        sent_amount = amount
+    else:
+        rec_curr = row['asset']
+        rec_amount = amount
+        sent_curr = ''
+        sent_amount = ''
+
+    new_row = pd.Series({
+        'Date' : row['time'], 
+        'refid' : row['refid'],
+        'subtype' : row['subtype'],
+        'Type' : row['type'],
+        'Detected Type' : 'migration-fusion',
+        'Received Currency' : rec_curr, 
+        'Received Amount' : rec_amount, 
+        'Received Net Worth' : '', 
+        'Sent Currency' : sent_curr, 
+        'Sent Amount' : sent_amount, 
+        'Sent Net Worth' : '', 
+        'Fee Currency' : row['asset'], 
+        'Fee Amount' : row['fee'], 
+        'Fee Net Worth' : '',
+        'Balance': row['balance']
+    })
+    return new_row

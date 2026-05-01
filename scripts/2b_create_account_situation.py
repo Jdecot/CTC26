@@ -100,7 +100,7 @@ asdf.loc[0] = init_row
 for index, row in ready_for_ingest.iterrows():
     row_ready_for_ingest = ready_for_ingest.loc[index]
 
-    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'transfer', 'reward', 'deposit', 'withdrawal']:
+    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'transfer', 'reward', 'deposit', 'withdrawal', 'delisting', 'migration-fusion']:
         if test_if_trade_EURvsUSD(row_ready_for_ingest) :
             asdf_last_row = asdf.iloc[-1].copy()
             # On recopie les détails même pour les échanges FIAT/FIAT
