@@ -246,7 +246,7 @@ def reorder_columns(df):
          "Normalized Received Currency", "Normalized Sent Currency",
         "Sent Currency", "Sent Amount",  
         "Received Currency", "Received Amount",
-        "Balance", "SOL", "SOL.F",	"SOL.S", "SOL03.S"
+        "Balance"
     ]
 
     cols_existantes = [c for c in cols_prioritaires if c in df.columns]

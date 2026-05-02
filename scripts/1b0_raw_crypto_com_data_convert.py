@@ -322,16 +322,4 @@ def main():
     # Export to csv
     new_df.to_csv(config.FILE_CRYPTOCOM_RFI_V2, sep=',', index=False)
 
-
-    # Print the total of buy
-    # filtered_df = new_df.loc[new_df['Sent Currency'] == 'ETH']
-    filtered_df = new_df.loc[(new_df['Sent Currency'] == 'BTC') | (new_df['Received Currency'] == 'BTC')]
-    # filtered_df = new_df.loc[new_df['Type'] == 'transfer']
-    print(filtered_df)
-    filtered_df.to_excel('my_data.xlsx', index=False)
-    # total_amount = filtered_df['Sent Amount'].sum()
-
-    # print("Total amount of 'buy' transactions:", total_amount)
-
-
 main()
