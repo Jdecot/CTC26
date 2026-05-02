@@ -18,7 +18,8 @@ scripts = [
     "1b_crypto_com_convert_date.py", 
     "1c_merge_and_sort_all_trades.py",
     "2a_normalize.py",
-    "2b_create_account_situation.py"
+    "2b_create_account_situation.py",
+    # "3_identify_taxable_event.py"
 ]
 
 
@@ -69,13 +70,9 @@ def export_all_csv_to_excel(source_dir, target_dir):
     
     print(f"\n📊 Batch conversion finished: {processed_files_count} files processed.")
 
-# --- Usage Example ---
-# export_all_csv_to_excel(config.DATA_DIR, config.DIR_EXCEL)
-
-
 def main():
     run_pipeline()
-    # module_global.show_holdings()
+    
     print("\n" + "="*40)
     print("📁 Export Excel")
     print("="*40)
