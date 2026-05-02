@@ -157,9 +157,9 @@ def load_prices_file_as_df(filename):
 
 
 def get_start_and_end_date_of_the_day(date) :  
-    date_obj = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-    day_start = str(date_obj.replace(hour=0, minute=0, second=0))
-    day_end = str(date_obj.replace(hour=23, minute=59, second=59))
+    date_obj = pd.to_datetime(date)
+    day_start = date_obj.strftime("%Y-%m-%d 00:00:00")
+    day_end = date_obj.strftime("%Y-%m-%d 23:59:59")
     return day_start, day_end
 
 
@@ -201,8 +201,19 @@ def show_holdings():
     
     last_row = df.iloc[-1]
     
+    # Colonnes techniques ou de transaction à ne pas afficher comme des holdings
+    cols_to_ignore = [
+        "Date", "platform", "Platform", "refid", "subtype", "Type", "Detected Type", 
+        "Received Currency", "Normalized Received Currency", "Received Amount", "Received Net Worth",
+        "Sent Currency", "Normalized Sent Currency", "Sent Amount", "Sent Net Worth", 
+        "Fee Currency", "Normalized Fee Currency", "Fee Amount", "Fee Net Worth",
+        "Balance", "Money_movement", "wallet_value_eur", "wallet_value_eur_m1", "EUR", "USD"
+    ]
+
     holdings = {}
     for col in df.columns:
+        if col in cols_to_ignore:
+            continue
         try:
             raw_val = str(last_row[col]).strip()
             # On ignore les colonnes vides ou contenant 'nan' pour éviter les erreurs de tri
@@ -227,3 +238,17 @@ def show_holdings():
     for crypto, qty in sorted_holdings.items():
         # Formate en décimal avec 18 chiffres max après la virgule, en supprimant les zéros inutiles à la fin
         print(f"  {crypto}: {qty:.18f}".rstrip('0').rstrip('.'))
+
+def reorder_columns(df):
+    """Réorganise les colonnes pour mettre les métadonnées et montants au début."""
+    cols_prioritaires = [
+        "Date", "refid", "subtype", "Type", "Detected Type", 
+         "Normalized Received Currency", "Normalized Sent Currency",
+        "Sent Currency", "Sent Amount",  
+        "Received Currency", "Received Amount",
+        "Balance", "SOL", "SOL.F",	"SOL.S", "SOL03.S"
+    ]
+
+    cols_existantes = [c for c in cols_prioritaires if c in df.columns]
+    autres_cols = [c for c in df.columns if c not in cols_existantes]
+    return df[cols_existantes + autres_cols]

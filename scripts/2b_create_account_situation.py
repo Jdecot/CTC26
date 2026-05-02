@@ -48,6 +48,8 @@ def remove_fee_from_currency_in_row(row, currency, amount_to_remove):
 
 
 def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
+
+
     new_row = asdf_last_row.copy()
 
     rec_amount = row_ready_for_ingest["Received Amount"]
@@ -58,10 +60,10 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
     sent_curr = row_ready_for_ingest["Sent Currency"]
     fee_curr = row_ready_for_ingest["Fee Currency"]
 
-    if pd.notna(rec_curr) and rec_curr != '' and row_ready_for_ingest['Detected Type'] not in ['transfer', 'deposit', 'withdrawal']:
+    if pd.notna(rec_curr) and rec_curr != '' and row_ready_for_ingest['Detected Type'] :
         new_row = add_amount_to_curreny_in_row(new_row, rec_curr, rec_amount)
     
-    if pd.notna(sent_curr) and sent_curr != '' and row_ready_for_ingest['Detected Type'] not in ['transfer', 'deposit', 'withdrawal']:
+    if pd.notna(sent_curr) and sent_curr != '' and row_ready_for_ingest['Detected Type'] :
         new_row = remove_amount_to_currency_in_row(new_row, sent_curr, sent_amount)
 
     if pd.notna(fee_curr) and fee_curr != '' and Decimal(str(fee_amount)) != 0:
@@ -100,7 +102,7 @@ asdf.loc[0] = init_row
 for index, row in ready_for_ingest.iterrows():
     row_ready_for_ingest = ready_for_ingest.loc[index]
 
-    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'transfer', 'reward', 'deposit', 'withdrawal', 'delisting', 'migration-fusion']:
+    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'transfer', 'reward', 'deposit', 'withdrawal', 'delisting', 'migration-fusion', 'transfer-staking', 'autoallocation']:
         if test_if_trade_EURvsUSD(row_ready_for_ingest) :
             asdf_last_row = asdf.iloc[-1].copy()
             # On recopie les détails même pour les échanges FIAT/FIAT
@@ -111,6 +113,9 @@ for index, row in ready_for_ingest.iterrows():
             asdf_last_row = asdf.iloc[-1].copy()
             new_row = add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row)
             asdf.loc[len(asdf)] = new_row
+
+# Réorganisation des colonnes
+asdf = module_global.reorder_columns(asdf)
 
 asdf.to_csv(config.FILE_ACCOUNT_SITUATION, index=False)
 module_global.show_holdings()

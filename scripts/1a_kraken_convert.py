@@ -27,11 +27,13 @@ def treat_row_v2(ledger_df, row):
     elif transaction_kind == 'transfer' :
         
         if row['subtype'] == 'delistingconversion':
-            print('delisting !!')
-            new_rows.append(Convert_kraken_delisting(row).to_dict())
+            new_rows.append(Convert_to_single_row(row, 'delisting').to_dict())
         elif row['subtype'] == '':
-            print('migration fusion !')
-            new_rows.append(Convert_kraken_migration(row).to_dict())
+            new_rows.append(Convert_to_single_row(row, 'migration-fusion').to_dict())
+        elif row['subtype'] in ['stakingtospot', 'stakingfromspot', 'spottostaking', 'spotfromstaking']:
+            new_rows.append(Convert_to_single_row(row, 'transfer-staking').to_dict())
+        elif row['subtype'] == 'autoallocation':
+            new_rows.append(Convert_to_single_row(row, 'autoallocation').to_dict())
         else : 
             treated_lines["transfert_line_ignored"] += 1
         if Decimal(str(row['fee'])) != 0:
@@ -68,6 +70,9 @@ def treat_row_v2(ledger_df, row):
 
     elif transaction_kind == 'trade' and refid in treated_ref_id :
         treated_lines["trade"] += 1
+
+    elif transaction_kind == 'reward' :
+        new_rows.append(Convert_to_single_row(row, 'reward').to_dict())
 
     else:
         # Ligne déjà traitée (refid déjà dans treated_ref_id) ou type non géré
@@ -146,7 +151,7 @@ def improve_rfi_quality(rfi_df):
             rfi_df['Date'] = pd.to_datetime(pd.to_numeric(rfi_df['Date'], errors='coerce'), unit='s')
             
             # Formatage final en texte propre pour le CSV
-            rfi_df['Date'] = rfi_df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            rfi_df['Date'] = rfi_df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S.%f').str[:-3]
 
     return rfi_df
 

@@ -60,7 +60,7 @@ KRAKEN_COLLECT_OUTPUT_FILE = DIR_0_ORIGINAL / "kraken_all_trades.csv"
 KRAKEN_CRYPTO_ID = {
 # --- BITCOIN & ETHEREUM ---
     "XXBT": "BTC", "XXBT.F": "BTC", "XXBT.B": "BTC", "XBT.M": "BTC", "XBT": "BTC",
-    "XETH": "ETH", "XETH.F": "ETH", "ETH2.S": "ETH", "ETH": "ETH",
+    "XETH": "ETH", "XETH.F": "ETH", "ETH2.S": "ETH", "ETH": "ETH", "XETH.B" : "ETH",
     
     # --- FIAT & STABLES ---
     "ZEUR": "EUR", "EUR": "EUR", "ZUSD": "USD", "USD": "USD",
@@ -75,7 +75,7 @@ KRAKEN_CRYPTO_ID = {
     "SOL": "SOL", "SOL.F": "SOL", "SOL.S": "SOL", "SOL03.S": "SOL",
     "TRX": "TRX", "TRX.F": "TRX",
     "INJ": "INJ", "INJ.F": "INJ", "INJ.B": "INJ",
-    "MATIC": "MATIC", "MATIC.S": "MATIC", "MATIC04.S": "MATIC",
+    "MATIC": "MATIC", "MATIC.S": "MATIC", "MATIC04.S": "MATIC", "MATIC.F" : "MATIC",
     "POL.F": "POL", "POL": "POL",
     "XXDG": "DOGE", "DOGE": "DOGE",
     "XXRP": "XRP", "XRP": "XRP",
