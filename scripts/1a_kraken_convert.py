@@ -85,10 +85,6 @@ def treat_row_v2(ledger_df, row):
     return new_rows
 
 
-def export_deposit_withdraw_csv(df):
-    depo_width_filepath = config.FILE_DEPOSIT_WITHDRAWAL
-    filtered_df = df.loc[(df['type'] == 'deposit') | (df['type'] == 'withdrawal')]
-    filtered_df.to_csv(depo_width_filepath, sep=',', index=False)
 
 
 
@@ -105,8 +101,6 @@ def convert_ledger_to_rfi(ledger_df):
         "Balance"
     ])
     
-    export_deposit_withdraw_csv(ledger_df)
-
     global treated_ref_id
     treated_ref_id = []
     global treated_lines
