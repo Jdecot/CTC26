@@ -10,7 +10,8 @@ DIR_0_ORIGINAL = DATA_DIR / "0_original_trade_files"
 DIR_1_RFI = DATA_DIR / "1_ready_for_ingest"
 DIR_2_AS = DATA_DIR / "2_account_situation"
 DIR_3_TAXABLE_EVENT = DATA_DIR / "3_taxable_event"
-DIR_OTHER = DATA_DIR / "other"
+DIR_4_REQUIRED_PRICES = DATA_DIR / "4_required_prices"
+DIR_5_GET_PRICES = DATA_DIR / "5_get_prices"
 DIR_EXCEL = DATA_DIR / "excel"
 
 # Fichiers spécifiques
@@ -25,6 +26,11 @@ FILE_ALL_TRADES = DIR_1_RFI / "all_trades.csv"
 FILE_ALL_TRADES_NORMALIZED = DIR_1_RFI / "all_trades_normalized.csv"
 FILE_ACCOUNT_SITUATION = DIR_2_AS / "account_situation.csv"
 FILE_TAXABLE_EVENT = DIR_3_TAXABLE_EVENT / "taxable_event.csv"
+FILE_REQUIRED_PRICES = DIR_4_REQUIRED_PRICES / "required_prices.csv"
+FILE_GET_YFINANCE_PRICES = DIR_5_GET_PRICES / "get_yfinance_prices.csv"
+FILE_GET_MANUAL_PRICES = DIR_5_GET_PRICES / "get_manual_prices.csv"
+FILE_MERGED_PRICES = DIR_5_GET_PRICES / "merged_prices.csv"
+FILE_HISTORICAL_PRICES_CACHE = DIR_4_REQUIRED_PRICES / "historical_prices_cache.csv"
 
 # Configuration des fichiers pour le merge
 MERGE_CONFIG = {

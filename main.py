@@ -19,7 +19,10 @@ scripts = [
     "1c_merge_and_sort_all_trades.py",
     "2a_normalize.py",
     "2b_create_account_situation.py",
-    # "3_identify_taxable_event.py"
+    "3_identify_taxable_event.py",
+    "4_list_required_prices.py",
+    "5_get_prices.py",
+    "5b_merge_prices.py"
 ]
 
 

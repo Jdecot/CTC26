@@ -6,13 +6,13 @@ def identify_taxable_events(df):
     fiat_currencies = ['EUR', 'USD']
     
     def check_row(row):
-        sent_cur = str(row['Normalized Sent Currency']).upper()
-        recv_cur = str(row['Normalized Received Currency']).upper()
+        sent_cur = str(row['Normalized Sent Currency']).strip().upper()
+        recv_cur = str(row['Normalized Received Currency']).strip().upper()
         
         # CAS 1 : Vente de Crypto contre Fiat
         # On vérifie qu'on reçoit du Fiat ET que ce qu'on a envoyé n'était PAS du fiat
-        if recv_cur in fiat_currencies and sent_cur not in fiat_currencies:
-            # On s'assure que ce n'est pas une ligne vide ou un simple dépôt de cash
+        # ET qu'on a bien envoyé quelque chose (pour exclure les dépôts de cash)
+        if recv_cur in fiat_currencies and sent_cur not in fiat_currencies and sent_cur not in ['', 'NAN']:
             if pd.to_numeric(row['Received Amount'], errors='coerce') > 0:
                 return True
             
@@ -39,7 +39,7 @@ def main():
     config.DIR_3_TAXABLE_EVENT.mkdir(parents=True, exist_ok=True)
     df.to_csv(config.FILE_TAXABLE_EVENT, index=False)
     
-    count = len(df[df['is_taxable_event'] == True])
+    count = df['is_taxable_event'].sum()
     print(f"✅ Terminé : {count} événements imposables détectés.")
     print(f"📂 Fichier créé : {config.FILE_TAXABLE_EVENT}")
 
