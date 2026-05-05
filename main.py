@@ -21,8 +21,11 @@ scripts = [
     "2b_create_account_situation.py",
     "3_identify_taxable_event.py",
     "4_list_required_prices.py",
-    "5_get_prices.py",
-    "5b_merge_prices.py"
+    "5_get_yfinance_prices.py",
+    "5b_merge_prices.py",
+    "6b_check_missing_prices.py",
+    "6a_check_prices_quality.py",
+    "6_add_price_to_taxable_event.py",
 ]
 
 

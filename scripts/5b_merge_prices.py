@@ -27,15 +27,9 @@ def main():
     # 3. Merge et nettoyage
     df_merged = pd.concat(dfs, ignore_index=True)
     
-    # 4. Normalisation et suppression des doublons
-    # On convertit en datetime AVANT de dédoublonner pour être certain de l'égalité des dates
-    df_merged['Date'] = pd.to_datetime(df_merged['Date'], format='ISO8601', utc=True)
-    
-    # Supprimer les doublons éventuels (même date, même actif)
-    # On garde le dernier (souvent le manuel s'il a été ajouté après)
-    df_merged = df_merged.drop_duplicates(subset=['Date', 'Asset'], keep='last')
-    
-    df_merged = df_merged.sort_values(by='Date', ascending=False)
+    # 4. Tri simple
+    # On ne supprime plus les doublons ici pour que le script 6a puisse les analyser
+    df_merged = df_merged.sort_values(by=['Date', 'Asset'], ascending=[True, True])
     
     # 5. Export
     config.DIR_5_GET_PRICES.mkdir(parents=True, exist_ok=True)

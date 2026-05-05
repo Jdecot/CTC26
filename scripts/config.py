@@ -12,6 +12,7 @@ DIR_2_AS = DATA_DIR / "2_account_situation"
 DIR_3_TAXABLE_EVENT = DATA_DIR / "3_taxable_event"
 DIR_4_REQUIRED_PRICES = DATA_DIR / "4_required_prices"
 DIR_5_GET_PRICES = DATA_DIR / "5_get_prices"
+DIR_6_TAXABLE_EVENT_WITH_PRICES = DATA_DIR / "6_add_price_to_taxable_event"
 DIR_EXCEL = DATA_DIR / "excel"
 
 # Fichiers spécifiques
@@ -29,8 +30,8 @@ FILE_TAXABLE_EVENT = DIR_3_TAXABLE_EVENT / "taxable_event.csv"
 FILE_REQUIRED_PRICES = DIR_4_REQUIRED_PRICES / "required_prices.csv"
 FILE_GET_YFINANCE_PRICES = DIR_5_GET_PRICES / "get_yfinance_prices.csv"
 FILE_GET_MANUAL_PRICES = DIR_5_GET_PRICES / "get_manual_prices.csv"
-FILE_MERGED_PRICES = DIR_5_GET_PRICES / "merged_prices.csv"
-FILE_HISTORICAL_PRICES_CACHE = DIR_4_REQUIRED_PRICES / "historical_prices_cache.csv"
+FILE_MERGED_PRICES = DIR_5_GET_PRICES / "price_db.csv"
+FILE_TAXABLE_EVENT_WITH_PRICES = DIR_6_TAXABLE_EVENT_WITH_PRICES / "taxable_events_with_price.csv"
 
 # Configuration des fichiers pour le merge
 MERGE_CONFIG = {

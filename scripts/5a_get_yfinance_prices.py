@@ -102,6 +102,7 @@ def main():
         # Normalisation des dates pour le dédoublonnage
         df_final['Date'] = pd.to_datetime(df_final['Date'], format='ISO8601', utc=True)
         df_final = df_final.drop_duplicates(subset=['Date', 'Asset'])
+        df_final = df_final.sort_values(by=['Date', 'Asset'], ascending=[True, True])
         df_final.to_csv(OUTPUT_FILE, index=False)
         if not df_new.empty:
             print(f"💾 Mise à jour terminée : {len(df_new)} prix ajoutés. Total : {len(df_final)} prix en base.")
