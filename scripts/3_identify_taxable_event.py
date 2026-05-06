@@ -1,9 +1,10 @@
 import pandas as pd
 import config
+import module_global
 
 def identify_taxable_events(df):
     # Liste des monnaies Fiat
-    fiat_currencies = ['EUR', 'USD']
+    fiat_currencies = module_global.FIAT_CURRENCIES
     
     def check_row(row):
         sent_cur = str(row['Normalized Sent Currency']).strip().upper()
@@ -34,6 +35,9 @@ def main():
     
     # 2. Identification des événements
     df = identify_taxable_events(df)
+    
+    # Réorganisation des colonnes (is_taxable_event sera placé avant les cryptos)
+    df = module_global.reorder_columns(df)
     
     # 3. Création du dossier de sortie et export
     config.DIR_3_TAXABLE_EVENT.mkdir(parents=True, exist_ok=True)

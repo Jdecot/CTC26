@@ -101,7 +101,7 @@ asdf.loc[0] = init_row
 for index, row in ready_for_ingest.iterrows():
     row_ready_for_ingest = ready_for_ingest.loc[index]
 
-    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'transfer', 'reward', 'deposit', 'withdrawal', 'delisting', 'migration-fusion', 'transfer-staking', 'autoallocation']:
+    if row_ready_for_ingest['Detected Type'] in ['buy', 'sell', 'trade', 'fiat_to_fiat', 'transfer', 'reward', 'deposit', 'withdrawal', 'delisting', 'migration-fusion', 'transfer-staking', 'autoallocation']:
         if test_if_trade_EURvsUSD(row_ready_for_ingest) :
             asdf_last_row = asdf.iloc[-1].copy()
             # On recopie les détails même pour les échanges FIAT/FIAT
@@ -116,8 +116,9 @@ for index, row in ready_for_ingest.iterrows():
 # Réorganisation des colonnes
 asdf = module_global.reorder_columns(asdf)
 
-# Ligne temporaire pour enquête : place les variantes BTC après 'Balance' (à supprimer après usage)
-asdf = asdf[list(asdf.columns[:12]) + [c for c in ["BTC", "XXBT", "XXBT.F", "XXBT.B", "XBT.M", "XBT"] if c in asdf.columns] + [c for c in asdf.columns[12:] if c not in ["XXBT", "XXBT.F", "XXBT.B", "XBT.M", "XBT"]]]
+# Suppression des colonnes Net Worth (plus nécessaires à partir de cette étape)
+cols_to_drop = ["Sent Net Worth", "Received Net Worth", "Fee Net Worth"]
+asdf = asdf.drop(columns=[c for c in cols_to_drop if c in asdf.columns])
 
 asdf.to_csv(config.FILE_ACCOUNT_SITUATION, index=False)
 module_global.show_holdings()

@@ -1,5 +1,6 @@
 import pandas as pd
 import config
+import module_global
 from module_1a import *
 
 
@@ -10,18 +11,18 @@ def treat_row_v2(ledger_df, row):
     new_rows = []
     global treated_lines, treated_ref_id
 
-    if transaction_kind == 'deposit' and  currency not in ['EUR', 'USD']:
+    if transaction_kind == 'deposit' and currency not in module_global.FIAT_CURRENCIES:
         new_rows.append(Convert_kraken_deposit(row).to_dict())
         treated_lines["deposit_in_crypto"] += 1
     
-    elif transaction_kind == 'deposit' and  currency in ['EUR', 'USD']:
+    elif transaction_kind == 'deposit' and currency in module_global.FIAT_CURRENCIES:
         treated_lines["deposit_in_fiat"] += 1
 
-    elif transaction_kind == 'withdrawal' and  currency not in ['EUR', 'USD'] :
+    elif transaction_kind == 'withdrawal' and currency not in module_global.FIAT_CURRENCIES:
         new_rows.append(Convert_kraken_withdrawal(row).to_dict())
         treated_lines["withdrawal_crypto"] += 1
 
-    elif  transaction_kind == 'withdrawal' and  currency in ['EUR', 'USD'] :
+    elif transaction_kind == 'withdrawal' and currency in module_global.FIAT_CURRENCIES:
         treated_lines["withdrawal_eur_ignored"] += 1
 
     elif transaction_kind == 'transfer' :

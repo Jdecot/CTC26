@@ -11,19 +11,19 @@ TECHNICAL_COLUMNS = [
     'Sent Currency', 'Sent Amount', 'Sent Net Worth', 
     'Received Currency', 'Received Amount', 'Received Net Worth', 
     'Fee Currency', 'Fee Amount', 'Fee Net Worth', 
-    'Balance', 'is_taxable_event', 'Money_movement',
+    'Balance', 'is_taxable_event', 'Money_movement', 'wallet_value_before', 'wallet_value_after',
     'wallet_value_eur', 'wallet_value_eur_m1'
 ]
 
 # Liste des devises Fiat (ou assimilées) à exclure des colonnes "crypto"
-FIAT_COLUMNS = ['EUR', 'USD', 'ZEUR', 'ZUSD']
+FIAT_CURRENCIES = ['EUR', 'USD', 'ZEUR', 'ZUSD']
 
 def get_crypto_columns(df, include_stables=True):
     """
     Identifie les colonnes d'actifs cryptos (celles qui contiennent les soldes).
     On exclut les colonnes de métadonnées, les devises fiat et optionnellement les stables.
     """
-    exclude = TECHNICAL_COLUMNS + FIAT_COLUMNS
+    exclude = TECHNICAL_COLUMNS + FIAT_CURRENCIES
     if not include_stables:
         exclude.extend(['USDT', 'USDC'])
     
@@ -141,11 +141,19 @@ def show_holdings():
 def reorder_columns(df):
     """Réorganise les colonnes pour mettre les métadonnées et montants au début."""
     cols_prioritaires = [
-        "Date", "refid", "subtype", "Type", "Detected Type", 
-         "Normalized Received Currency", "Normalized Sent Currency",
-        "Sent Currency", "Sent Amount",  
-        "Received Currency", "Received Amount",
-        "Balance"
+        "Date", "Type", "subtype", "Detected Type", "platform", "refid",
+        
+        "Sent Amount", "Sent Currency", "Normalized Sent Currency",
+        
+        "Received Amount", "Received Currency", "Normalized Received Currency", 
+        "Balance",
+        
+        "Fee Amount", "Fee Currency", "Normalized Fee Currency",
+        
+        "Sent Net Worth", "Received Net Worth", "Fee Net Worth",
+        
+        "is_taxable_event", 
+        "wallet_value_before", "wallet_value_after"
     ]
 
     cols_existantes = [c for c in cols_prioritaires if c in df.columns]

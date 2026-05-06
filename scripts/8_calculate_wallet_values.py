@@ -1,5 +1,6 @@
 import pandas as pd
 import config
+import module_global
 from decimal import Decimal, InvalidOperation
 
 def main():
@@ -55,6 +56,9 @@ def main():
     wallet_results = df.apply(process_wallet_values, axis=1)
     df['wallet_value_after'] = wallet_results['wallet_value_after']
     df['wallet_value_before'] = wallet_results['wallet_value_before']
+
+    # Réorganisation des colonnes (wallet_values seront placées avant les cryptos)
+    df = module_global.reorder_columns(df)
 
     # Sauvegarde
     config.DIR_8_WALLET_VALUES.mkdir(parents=True, exist_ok=True)

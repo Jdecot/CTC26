@@ -1,5 +1,6 @@
 import pandas as pd
 from decimal import Decimal
+import module_global
 
 def Identify_transaction_type(sent_row, receive_row):
     """
@@ -13,17 +14,23 @@ def Identify_transaction_type(sent_row, receive_row):
     Le type de transaction ("trade", "buy" ou "sell").
     """
 
-    sent_row_asset = sent_row['asset']
-    receive_row_asset = receive_row['asset']
+    sent_row_asset = str(sent_row['asset']).upper()
+    receive_row_asset = str(receive_row['asset']).upper()
 
-    if sent_row_asset != 'EUR' and receive_row_asset != 'EUR':
+    if sent_row_asset not in module_global.FIAT_CURRENCIES and receive_row_asset not in module_global.FIAT_CURRENCIES:
         transaction_type = 'trade'
-    elif sent_row_asset == 'EUR' and receive_row_asset != 'EUR':
+    elif sent_row_asset in module_global.FIAT_CURRENCIES and receive_row_asset not in module_global.FIAT_CURRENCIES:
         transaction_type = 'buy'
-    elif sent_row_asset != 'EUR' and receive_row_asset == 'EUR':
+    elif sent_row_asset not in module_global.FIAT_CURRENCIES and receive_row_asset in module_global.FIAT_CURRENCIES:
         transaction_type = 'sell'
+    elif sent_row_asset in module_global.FIAT_CURRENCIES and receive_row_asset in module_global.FIAT_CURRENCIES:
+        transaction_type = 'fiat_to_fiat'
     else:
     # Lever une exception si aucune des conditions n'est remplie
+        print("error sent row : ", sent_row)
+        print("error receive_row : ", receive_row)
+        print("sent_row_asset : ", sent_row_asset)
+        print("receive_row_asset : ", receive_row_asset)
         raise ValueError("Impossible de définir le type de transaction. Valeurs d'actifs non valides.")
 
     return transaction_type
@@ -79,21 +86,27 @@ def Compute_amounts_according_fees(sent_row, receive_row, fees_data, transaction
     Vente en euros, fees en euros : Enlever les fees au received amount, si c'est la ligne receive qui paye les fees
     """
 
+    fee_currency = str(fees_data['Fee Currency']).upper()
+
     # Case when buy crypto, fees in crypto, remove fees from received amount (fees has been convert to positive value) to get total received amount
-    if transaction_type == 'buy' and fees_data['Fee Currency'] != 'EUR' and fees_data['Fee Row'] == 'receive_row':
-        receive_row['amount'] = Decimal(str(receive_row['amount'])) + fees_data['Fee Amount']
+    if transaction_type == 'buy' and fee_currency not in module_global.FIAT_CURRENCIES and fees_data['Fee Row'] == 'receive_row':
+        receive_row['amount'] = Decimal(str(receive_row['amount'])) 
 
     # Case when buy crypto, fees in euros, add fees to sent amount (fees has been convert to positive value) to get total sent amount
-    elif transaction_type == 'buy' and fees_data['Fee Currency'] == 'EUR' and fees_data['Fee Row'] == 'sent_row':
+    elif transaction_type == 'buy' and fee_currency in module_global.FIAT_CURRENCIES and fees_data['Fee Row'] == 'sent_row':
         sent_row['amount'] = Decimal(str(sent_row['amount'])) - fees_data['Fee Amount']
 
     # Case when sell crypto, fees in euros, remove fees from received amount (fees has been convert to positive value) to get total received amount
-    elif transaction_type == 'sell' and fees_data['Fee Currency'] == 'EUR' and fees_data['Fee Row'] == 'receive_row':
+    elif transaction_type == 'sell' and fee_currency in module_global.FIAT_CURRENCIES and fees_data['Fee Row'] == 'receive_row':
         pass
 
     # Case when trade crypto for another one, fees in the sent row, add fees to sent amount to get total amount sent
     elif transaction_type == 'trade' and fees_data['Fee Row'] == 'sent_row':
         sent_row['amount'] = Decimal(str(sent_row['amount'])) 
+
+    # Case when trade fiat for another one
+    elif transaction_type == 'fiat_to_fiat' and fees_data['Fee Row'] == 'receive_row':
+        receive_row['amount'] = Decimal(str(receive_row['amount'])) - fees_data['Fee Amount']
     
     # Case when trade crypto for another one, fees in the receive row, remove fees from received amount to get total amount received
     elif transaction_type == 'trade' and fees_data['Fee Row'] == 'receive_row':

@@ -50,7 +50,7 @@ MERGE_CONFIG = {
 
 # --- CONFIGURATION COLLECTE KRAKEN ---
 KRAKEN_START_DATE = "2023-01-01"
-KRAKEN_END_DATE = "2026-05-01"
+KRAKEN_END_DATE = "2026-06-01"
 # On utilise le chemin déjà défini DIR_0_ORIGINAL pour la cohérence
 KRAKEN_COLLECT_OUTPUT_FILE = DIR_0_ORIGINAL / "kraken_all_trades.csv"
 
@@ -58,10 +58,9 @@ KRAKEN_COLLECT_OUTPUT_FILE = DIR_0_ORIGINAL / "kraken_all_trades.csv"
 
 KRAKEN_CRYPTO_ID = {
 # --- BITCOIN & ETHEREUM ---
-    # "XXBT": "BTC", "XXBT.F": "BTC", "XXBT.B": "BTC", "XBT.M": "BTC", "XBT": "BTC",
-    "XXBT": "XXBT", "XXBT.F": "XXBT.F", "XXBT.B": "XXBT.B", "XBT.M": "XBT.M", "XBT": "XBT",
+    "XXBT": "BTC", "XXBT.F": "BTC", "XXBT.B": "BTC", "XBT.M": "BTC", "XBT": "BTC",
     "XETH": "ETH", "XETH.F": "ETH", "ETH2.S": "ETH", "ETH": "ETH", "XETH.B" : "ETH",
-    
+
     # --- FIAT & STABLES ---
     "ZEUR": "EUR", "EUR": "EUR", "ZUSD": "USD", "USD": "USD",
     "USDC": "USDC", "USDC.F": "USDC", "USDC.M": "USDC",
