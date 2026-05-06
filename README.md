@@ -1,86 +1,79 @@
 
+# 🪙 Calcul des Impôts Crypto - France (Méthode PTA)
 
-
-
-
-
-# Documents officiels
+Ce projet permet d'automatiser le calcul de la plus-value latente et imposable sur les actifs numériques selon la réglementation fiscale française.
 
 ### Calcul de la plus value officiel
-https://www.economie.gouv.fr/cedef/regime-fiscal-cryptomonnaies
+La formule légale utilisée est :
+**Plus ou moins-value brute = Prix de cession – [Prix total d'acquisition x Prix de cession / Valeur globale du portefeuille]**
 
-Détail (voir partie crypto en bas de la page): 
-https://www.impots.gouv.fr/particulier/les-cessions-mobilieres
+*   **Prix de cession** : Prix réel perçu lors de la vente, net de frais.
+*   **Prix Total d'Acquisition (PTA)** : Somme des prix d'achats en monnaie fiat, ajustée après chaque vente.
+*   **Valeur globale du portefeuille** : Somme des valeurs de tous les actifs détenus juste avant la cession.
 
-Plus ou moins-value brute = Prix de cession – [Prix total d'acquisition x Prix de cession / Valeur globale du portefeuille]
+---
 
-Prix de cession : Prix réel perçu par le cédant lors de la cession. 
-Le cas échéant, il doit être majoré de la soulte que le cédant a reçue lors de la cession ou minoré de la soulte qu’il a versée lors de cette même cession. Il est également réduit, sur justificatifs, des frais supportés par le cédant à l’occasion de cette cession.
+## 🚀 Le Pipeline de Traitement
 
-les frais de transaction payés à la plateforme d’échange ou aux mineurs sont à considérer soit comme une réduction du prix de vente, soit comme une augmentation du prix d’acquisition.
+Le processus est décomposé en scripts numérotés exécutables via `main.py`.
 
-Valeur globale du portefeuille au moment de la cession : 
-La somme des valeurs, au moment de la cession, des différentes crypto détenus par le cédant AVANT de procéder à la cession. 
+### 1. Ingestion et Normalisation
+*   **`1a_kraken_convert.py`** : Transforme le fichier `ledgers.csv` de Kraken en format standard (RFI). Il fusionne les lignes séparées (achat/vente) en une seule transaction.
+*   **`1b0_raw_crypto_com_data_convert.py`** : ETL spécifique pour les exports de l'application Crypto.com.
+*   **`1b_crypto_com_convert_date.py`** : Harmonise les formats de date pour les données Crypto.com.
+*   **`1c_merge_and_sort_all_trades.py`** : Fusionne tous les fichiers de toutes les plateformes en un historique unique trié chronologiquement.
+*   **`1d_normalize.py`** : Unifie les noms des actifs (ex: `XXBT` devient `BTC`) et nettoie les montants.
 
-Le prix total d'acquisition :
-Somme de tous les prix acquittés en monnaie ayant cours légal à l'occasion de l'ensemble des acquisitions de crypto réalisées avant la cession, et de la valeur des biens ou services, comprenant le cas échéant les soultes versées, fournis en contrepartie de ces acquisitions.
+### 2. Situation du Portefeuille
+*   **`2_create_account_situation.py`** : Calcule le solde de chaque actif après chaque transaction. Génère `account_situation.csv`.
+*   **`2b_check_amount_quality.py`** : Vérifie la cohérence des soldes (détecte les soldes négatifs impossibles).
 
-Vidéo youtube très bien expliqué sur la méthode de calcul : 
-https://www.youtube.com/watch?v=yzjlPIZRPIQ&ab_channel=JulienGuilloux
+### 3. Identification Fiscale
+*   **`3_identify_taxable_event.py`** : Marque les transactions qui constituent un événement imposable (échange Crypto vers Fiat).
+*   **`4_list_required_prices.py`** : Liste tous les actifs et dates pour lesquels un prix en EUR est nécessaire pour calculer la valeur du portefeuille.
 
+### 4. Collecte des Prix
+*   **`5a_get_yfinance_prices.py`** : Récupère automatiquement les cours historiques via l'API Yahoo Finance.
+*   **`5b_merge_prices.py`** : Fusionne les prix automatiques et les prix saisis manuellement.
+*   **`5c_check_missing_price_in_price_db.py`** : Identifie les manques dans la base de données de prix.
+*   **`5d_check_prices_quality_in_price_db.py`** : Vérifie la cohérence des prix (écarts anormaux entre sources).
 
-Aide générale et non officiel :
-https://www.blockpit.io/tax-guides/impot-crypto-france#:~:text=La%20vente%20de%20crypto%2Dactifs%20et%20de%20leurs%20droits%20en,agit%20d'un%20%C3%A9v%C3%A9nement%20imposable.
+### 5. Calcul des Valeurs et PTA
+*   **`6a_add_price_to_taxable_event.py`** : Associe chaque actif détenu à son prix en EUR au moment des ventes.
+*   **`6b_validate_taxable_prices.py`** : Valide que tous les actifs d'un événement imposable ont bien un prix.
+*   **`7_calculate_fiat_values.py`** : Calcule la valeur en EUR de chaque ligne d'actif (Quantité * Prix).
+*   **`8_calculate_wallet_values.py`** : Calcule la valeur globale du portefeuille avant et après chaque vente.
+*   **`9_PTA_sell_ratio.py`** : Calcule le ratio de cession (Prix de cession / Valeur globale).
+*   **`10_compute_PTA.py`** : Calcule le Prix Total d'Acquisition (PTA) courant et le montant du PTA à déduire pour la vente actuelle.
 
-Fichier data Kraken : 
-https://support.kraken.com/hc/fr/articles/360047543791-Downloadable-historical-market-data-time-and-sales-
-https://drive.google.com/drive/folders/188O9xQjZTythjyLNes_5zfMEFaMbTT22
-https://drive.google.com/file/d/1MsMtaVdTF1lET3C8LiSFPjg-hH76fTgo/view?pli=1
+---
 
-Fichier data Bitget pour CRO :
-https://www.bitget.com/price/cronos/historical-data#download
+## 📁 Organisation des Données
 
+Les données transitent par le dossier `/Data` suivant cette logique :
+*   **`0_original_trade_files`** : Vos exports CSV bruts (Kraken, Crypto.com, etc.).
+*   **`1_ready_for_ingest`** : Fichiers nettoyés et normalisés.
+*   **`2_account_situation`** : L'historique des soldes par crypto.
+*   **`3_taxable_event`** : Identification des ventes imposables.
+*   **`5_get_prices`** : Base de données locale des prix EUR (`price_db.csv`).
+*   **`10_compute_pta`** : Fichier final contenant tous les éléments pour la déclaration de plus-value.
+*   **`excel`** : Export final formaté avec en-têtes colorés pour révision manuelle.
 
-# Les fichiers data
-    ledgers.csv : liste des transactions Kraken, fichier original
-    kraken_ready_for_ingest.csv : liste des transactions Kraken, transformé par le premier ETL (kraken_convert.py)
-    cryptocom_2023_ready_for_ingest.csv : liste des transactions crypto.com, fichier transformé
-    export_for_check.csv : fichier peu important, utilisé pour débug
-    deposit_withdrawal.csv : fichier recensant la liste des dépots et retraits effectués auprès des plateforms d'échange. 
+---
 
-# Les fichiers du programme
-1_kraken_convert.py : 
-Premier ETL, utilisé pour transformer un fichier de transactions Kraken (ledgers) en fichier ready_for_ingest.csv
+## 📚 Ressources et Liens Officiels
 
-kraken_convert_fct.py : 
-fichier contenant les fonctions utilisées par kraken_convert.py
+*   **BOI-RPPM-PVAMC-20-10** : Détail officiel du calcul des plus-values
+*   **Économie Gouv** : Régime fiscal des cryptomonnaies
+*   **Tutoriel vidéo** : Méthode de calcul expliquée
 
-2_Create_account_situation.py :
-Créer un fichier account situation avec la liste des cryptomonnaies détennus en portefeuille.
-In : Prends en entrée un fichier ready_to_ingest, exemple : cryptocom_2023_ready_for_ingest.csv
-Out : exporte un fichier account_situation : account_situation.csv
+---
 
-3_enrich_account_situation.py : 
-Enrichis le fichier account_situation avec la valeur en euros des cryptomonnaies déténus à l'instant T. 
+## 🛠️ Configuration
 
-4_compute_situation.py : 
-Va calculer la valeur en euro de chaque position à chaque instant de transaction. 
-Calcule également la valeur totale du portefeuille à l'instant T. 
+La configuration centrale se trouve dans `scripts/config.py` :
+*   Mapping des IDs Kraken (`KRAKEN_CRYPTO_ID`).
+*   Dates de début et de fin de collecte.
+*   Définition des dossiers de données.
 
-# Pipeline évolution des fichiers de data
-
-1 - ledgers.csv : 
-fichier brut des transactions kraken, tel que téléchargé directement sur kraken.com
-
-2 - kraken_ready_for_ingest.csv : 
-fichier ledgers.csv après transformation par 1_kraken_convert.py
-Permet de réorganiser les lignes. 
-Par exemple deux lignes représentant la même transaction (vendu BTC et reçu EUR), seront réunis en une ligne
-
-3 - account_situation.csv : 
-fichier kraken_ready_for_ingest après transformation par create_account_situation.py. 
-Permet d'avoir une vision du compte à un instant T
-
-4 - enriched_account_situation : 
-fichier account_situation.csv après transformation par enrich_account_situation.py. 
-Ajoute le prix des crypto détenus en portefeuille à chaque moment faisant l'objet d'une transaction. 
+Le fichier `scripts/module_global.py` contient les constantes partagées (ex: `FIAT_CURRENCIES`) et les outils de formatage Excel.
