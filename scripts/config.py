@@ -15,6 +15,7 @@ DIR_5_GET_PRICES = DATA_DIR / "5_get_prices"
 DIR_6_TAXABLE_EVENT_WITH_PRICES = DATA_DIR / "6_add_price_to_taxable_event"
 DIR_7_CALCULATE_FIAT_VALUES = DATA_DIR / "7_calculate_fiat_values"
 DIR_8_WALLET_VALUES = DATA_DIR / "8_calculate_wallet_values"
+DIR_9_PTA = DATA_DIR / "9_pta_sell_ratio"
 DIR_EXCEL = DATA_DIR / "excel"
 
 # Fichiers spécifiques
@@ -36,6 +37,7 @@ FILE_MERGED_PRICES = DIR_5_GET_PRICES / "price_db.csv"
 FILE_TAXABLE_EVENT_WITH_PRICES = DIR_6_TAXABLE_EVENT_WITH_PRICES / "taxable_events_with_price.csv"
 FILE_TAXABLE_EVENT_WITH_FIAT_VALUES = DIR_7_CALCULATE_FIAT_VALUES / "taxable_events_with_values.csv"
 FILE_TAXABLE_EVENT_WITH_WALLET_VALUES = DIR_8_WALLET_VALUES / "taxable_events_with_wallet_values.csv"
+FILE_TAXABLE_EVENT_WITH_PTA = DIR_9_PTA / "taxable_events_with_pta.csv"
 
 # Configuration des fichiers pour le merge
 MERGE_CONFIG = {

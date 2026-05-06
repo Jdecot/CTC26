@@ -13,6 +13,7 @@ BASE_DIR = Path(__file__).parent
 SCRIPTS_DIR = BASE_DIR / "scripts"
 
 scripts = [
+    # "0_collect_kraken.py",
     "1a_kraken_convert.py",
     "1b0_raw_crypto_com_data_convert.py",
     "1b_crypto_com_convert_date.py", 
@@ -20,16 +21,17 @@ scripts = [
     "1d_normalize.py",
     "2_create_account_situation.py",
     "2b_check_amount_quality.py",
-    # "3_identify_taxable_event.py",
-    # "4_list_required_prices.py",
-    # "5a_get_yfinance_prices.py",
-    # "5b_merge_prices.py",
-    # "5c_check_missing_price_in_price_db.py",
-    # "5d_check_prices_quality_in_price_db.py",
-    # "6a_add_price_to_taxable_event.py",
-    # "6b_validate_taxable_prices.py",
-    # "7_calculate_fiat_values.py",
-    # "8_calculate_wallet_values.py"
+    "3_identify_taxable_event.py",
+    "4_list_required_prices.py",
+    "5a_get_yfinance_prices.py",
+    "5b_merge_prices.py",
+    "5c_check_missing_price_in_price_db.py",
+    "5d_check_prices_quality_in_price_db.py",
+    "6a_add_price_to_taxable_event.py",
+    "6b_validate_taxable_prices.py",
+    "7_calculate_fiat_values.py",
+    "8_calculate_wallet_values.py",
+    "9_PTA_sell_ratio.py"
 ]
 
 
