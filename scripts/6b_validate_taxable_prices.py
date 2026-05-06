@@ -1,21 +1,6 @@
 import pandas as pd
 import config
-
-def get_crypto_columns(df):
-    """
-    Identifie les colonnes d'actifs cryptos (celles qui contiennent les soldes).
-    On exclut les colonnes de métadonnées et les colonnes de prix.
-    """
-    technical_cols = [
-        'Date', 'refid', 'subtype', 'Type', 'Detected Type', 
-        'Normalized Received Currency', 'Normalized Sent Currency', 
-        'Sent Currency', 'Sent Amount', 'Received Currency', 
-        'Received Amount', 'Balance', 'platform', 'Received Net Worth', 
-        'Sent Net Worth', 'Fee Currency', 'Fee Amount', 'Fee Net Worth', 
-        'Normalized Fee Currency', 'is_taxable_event', 'EUR', 'USD', 'ZEUR', 'ZUSD', 'USDT', 'USDC'
-    ]
-    # On ne garde que les colonnes qui ne sont pas dans la liste technique et qui ne finissent pas par _price
-    return [col for col in df.columns if col not in technical_cols and not col.endswith('_price')]
+import module_global
 
 def main():
     print(f"🔍 Vérification de la complétude des prix pour les événements imposables...")
@@ -28,7 +13,7 @@ def main():
     df = pd.read_csv(config.FILE_TAXABLE_EVENT_WITH_PRICES, dtype=str)
     
     # Identification des cryptos présentes dans le fichier
-    crypto_assets = get_crypto_columns(df)
+    crypto_assets = module_global.get_crypto_columns(df, include_stables=True)
     
     # Filtre sur les événements imposables
     mask_taxable = df['is_taxable_event'].astype(str).str.upper() == 'TRUE'

@@ -1,18 +1,11 @@
 import pandas as pd
 import config
+import module_global
 
 def extract_price_requirements(df_situation):
     taxable_df = df_situation[df_situation['is_taxable_event'].astype(str).str.upper() == 'TRUE'].copy()
     
-    non_crypto_cols = [
-        'Date', 'refid', 'subtype', 'Type', 'Detected Type', 
-        'Normalized Received Currency', 'Normalized Sent Currency', 
-        'Sent Currency', 'Sent Amount', 'Received Currency', 
-        'Received Amount', 'Balance', 'platform', 'Received Net Worth', 
-        'Sent Net Worth', 'Fee Currency', 'Fee Amount', 'Fee Net Worth', 
-        'Normalized Fee Currency', 'is_taxable_event', 'EUR', 'USD', 'ZEUR', 'ZUSD'
-    ]
-    crypto_columns = [col for col in df_situation.columns if col not in non_crypto_cols]
+    crypto_columns = module_global.get_crypto_columns(df_situation)
     
     requirements = []
     for _, row in taxable_df.iterrows():

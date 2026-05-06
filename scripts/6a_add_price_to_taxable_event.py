@@ -1,19 +1,6 @@
 import pandas as pd
 import config
-
-def get_crypto_columns(df):
-    """
-    Identifie les colonnes d'actifs cryptos en excluant les colonnes techniques et fiat.
-    """
-    non_crypto_cols = [
-        'Date', 'refid', 'subtype', 'Type', 'Detected Type', 
-        'Normalized Received Currency', 'Normalized Sent Currency', 
-        'Sent Currency', 'Sent Amount', 'Received Currency', 
-        'Received Amount', 'Balance', 'platform', 'Received Net Worth', 
-        'Sent Net Worth', 'Fee Currency', 'Fee Amount', 'Fee Net Worth', 
-        'Normalized Fee Currency', 'is_taxable_event', 'EUR', 'USD', 'ZEUR', 'ZUSD', 'USDT', 'USDC'
-    ]
-    return [col for col in df.columns if col not in non_crypto_cols]
+import module_global
 
 def load_dataframes():
     """
@@ -83,7 +70,7 @@ def main():
         return
 
     df_taxable, df_prices = load_dataframes()
-    crypto_columns = get_crypto_columns(df_taxable)
+    crypto_columns = module_global.get_crypto_columns(df_taxable, include_stables=True)
     price_map = build_price_map(df_prices)
     
     df_enriched = initialize_price_columns(df_taxable, crypto_columns)
