@@ -49,7 +49,6 @@ def remove_fee_from_currency_in_row(row, currency, amount_to_remove):
 
 def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
 
-
     new_row = asdf_last_row.copy()
 
     rec_amount = row_ready_for_ingest["Received Amount"]
@@ -116,6 +115,9 @@ for index, row in ready_for_ingest.iterrows():
 
 # Réorganisation des colonnes
 asdf = module_global.reorder_columns(asdf)
+
+# Ligne temporaire pour enquête : place les variantes BTC après 'Balance' (à supprimer après usage)
+asdf = asdf[list(asdf.columns[:12]) + [c for c in ["BTC", "XXBT", "XXBT.F", "XXBT.B", "XBT.M", "XBT"] if c in asdf.columns] + [c for c in asdf.columns[12:] if c not in ["XXBT", "XXBT.F", "XXBT.B", "XBT.M", "XBT"]]]
 
 asdf.to_csv(config.FILE_ACCOUNT_SITUATION, index=False)
 module_global.show_holdings()

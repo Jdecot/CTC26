@@ -20,14 +20,16 @@ scripts = [
     "1d_normalize.py",
     "2_create_account_situation.py",
     "2b_check_amount_quality.py",
-    "3_identify_taxable_event.py",
-    "4_list_required_prices.py",
-    "5a_get_yfinance_prices.py",
-    "5b_merge_prices.py",
-    "5c_check_missing_price_in_price_dbs.py",
-    "5d_check_prices_quality_in_price_db.py",
-    "6a_add_price_to_taxable_event.py",
-    "6b_validate_taxable_prices.py"
+    # "3_identify_taxable_event.py",
+    # "4_list_required_prices.py",
+    # "5a_get_yfinance_prices.py",
+    # "5b_merge_prices.py",
+    # "5c_check_missing_price_in_price_db.py",
+    # "5d_check_prices_quality_in_price_db.py",
+    # "6a_add_price_to_taxable_event.py",
+    # "6b_validate_taxable_prices.py",
+    # "7_calculate_fiat_values.py",
+    # "8_calculate_wallet_values.py"
 ]
 
 
