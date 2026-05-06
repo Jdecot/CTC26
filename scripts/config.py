@@ -17,6 +17,7 @@ DIR_7_CALCULATE_FIAT_VALUES = DATA_DIR / "7_calculate_fiat_values"
 DIR_8_WALLET_VALUES = DATA_DIR / "8_calculate_wallet_values"
 DIR_9_PTA = DATA_DIR / "9_pta_sell_ratio"
 DIR_10_PTA = DATA_DIR / "10_compute_pta"
+DIR_11_PV = DATA_DIR / "11_compute_pv"
 DIR_EXCEL = DATA_DIR / "excel"
 
 # Fichiers spécifiques
@@ -40,6 +41,7 @@ FILE_TAXABLE_EVENT_WITH_FIAT_VALUES = DIR_7_CALCULATE_FIAT_VALUES / "taxable_eve
 FILE_TAXABLE_EVENT_WITH_WALLET_VALUES = DIR_8_WALLET_VALUES / "taxable_events_with_wallet_values.csv"
 FILE_TAXABLE_EVENT_WITH_PTA = DIR_9_PTA / "taxable_events_with_pta.csv"
 FILE_TAXABLE_EVENT_WITH_PTA_VALUES = DIR_10_PTA / "taxable_events_with_pta_values.csv"
+FILE_TAXABLE_EVENT_WITH_PV = DIR_11_PV / "taxable_events_with_pv.csv"
 
 # Configuration des fichiers pour le merge
 MERGE_CONFIG = {

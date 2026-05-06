@@ -10,7 +10,7 @@ TECHNICAL_COLUMNS = [
     'Normalized Received Currency', 'Normalized Sent Currency', 'Normalized Fee Currency',
     'Sent Currency', 'Sent Amount', 'Sent Net Worth', 
     'Received Currency', 'Received Amount', 'Received Net Worth', 
-    'Fee Currency', 'Fee Amount', 'Fee Net Worth', 'PTA_sell_ratio', 'PTA_to_deduct', 'PTA',
+    'Fee Currency', 'Fee Amount', 'Fee Net Worth', 'PTA_sell_ratio', 'PTA_to_deduct', 'PTA', 'plus_value',
     'Balance', 'is_taxable_event', 'Money_movement', 'wallet_value_before', 'wallet_value_after',
     'wallet_value_eur', 'wallet_value_eur_m1'
 ]
@@ -155,7 +155,9 @@ def reorder_columns(df):
         "is_taxable_event", 
         "wallet_value_before", "wallet_value_after",
         "PTA_sell_ratio",
-        "PTA_to_deduct", "PTA"
+        "PTA_to_deduct", 
+        "PTA",
+        "plus_value"
     ]
 
     cols_existantes = [c for c in cols_prioritaires if c in df.columns]
