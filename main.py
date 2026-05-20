@@ -34,7 +34,8 @@ scripts = [
     "8_calculate_wallet_values.py",
     "9_PTA_sell_ratio.py",
     "10_compute_PTA.py",
-    "11_compute_pv.py"
+    "11_compute_pv.py",
+    "12_final_export_fiat.py"
 ]
 
 

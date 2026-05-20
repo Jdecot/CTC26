@@ -13,6 +13,14 @@ def main():
     # Chargement des données (en string pour la précision Decimal)
     df = pd.read_csv(config.FILE_TAXABLE_EVENT_WITH_WALLET_VALUES, dtype=str).fillna("")
     
+    # Calcul du Prix de Cession Net (uniquement si les devises concordent)
+    def get_net_received(r):
+        if r['Normalized Received Currency'] == r['Normalized Fee Currency'] and r['Normalized Received Currency'] != "":
+            return f"{(Decimal(r['Received Amount'] or 0) - Decimal(r['Fee Amount'] or 0)):f}"
+        return r['Received Amount']
+    
+    df['Net Received Amount'] = df.apply(get_net_received, axis=1)
+
     def calculate_pta_ratio(row):
         # On ne traite que les événements imposables
         if str(row.get('is_taxable_event', '')).strip().upper() != 'TRUE':
@@ -20,8 +28,8 @@ def main():
 
         try:
             # Récupération des valeurs
-            # Received Amount est le montant Fiat (Prix de cession)
-            rec_amount_raw = str(row.get('Received Amount', '0')).strip()
+            # On utilise désormais le Net Received Amount (Prix de cession net de frais)
+            rec_amount_raw = str(row.get('Net Received Amount', '0')).strip()
             rec_amount = Decimal(rec_amount_raw) if rec_amount_raw else Decimal('0')
             
             # wallet_value_before est la valeur globale du portefeuille avant cession

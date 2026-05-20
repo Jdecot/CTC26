@@ -10,7 +10,7 @@ TECHNICAL_COLUMNS = [
     'Normalized Received Currency', 'Normalized Sent Currency', 'Normalized Fee Currency',
     'Sent Currency', 'Sent Amount', 'Sent Net Worth', 
     'Received Currency', 'Received Amount', 'Received Net Worth', 
-    'Fee Currency', 'Fee Amount', 'Fee Net Worth', 'PTA_sell_ratio', 'PTA_to_deduct', 'PTA', 'plus_value',
+    'Fee Currency', 'Fee Amount', 'Fee Net Worth', 'Net Received Amount', 'PTA_sell_ratio', 'PTA_before_tx', 'PTA_to_deduct', 'PTA', 'plus_value',
     'Balance', 'is_taxable_event', 'Money_movement', 'wallet_value_before', 'wallet_value_after',
     'wallet_value_eur', 'wallet_value_eur_m1'
 ]
@@ -146,6 +146,7 @@ def reorder_columns(df):
         "Sent Amount", "Sent Currency", "Normalized Sent Currency",
         
         "Received Amount", "Received Currency", "Normalized Received Currency", 
+        "Net Received Amount",
         "Balance",
         
         "Fee Amount", "Fee Currency", "Normalized Fee Currency",
@@ -155,6 +156,7 @@ def reorder_columns(df):
         "is_taxable_event", 
         "wallet_value_before", "wallet_value_after",
         "PTA_sell_ratio",
+        "PTA_before_tx",
         "PTA_to_deduct", 
         "PTA",
         "plus_value"

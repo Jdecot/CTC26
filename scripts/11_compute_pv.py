@@ -20,7 +20,7 @@ def main():
 
         try:
             # Received Amount est le Prix de cession
-            rec_amount_raw = str(row.get('Received Amount', '0')).strip()
+            rec_amount_raw = str(row.get('Net Received Amount', '0')).strip()
             rec_amount = Decimal(rec_amount_raw) if rec_amount_raw else Decimal('0')
             
             # PTA_to_deduct est la part du prix d'acquisition calculée à l'étape 10

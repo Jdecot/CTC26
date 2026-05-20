@@ -16,6 +16,7 @@ def main():
     pta_running = Decimal('0')
     results_pta = []
     results_pta_to_deduct = []
+    results_pta_before = []
 
     for idx, row in df.iterrows():
         is_buy = str(row.get('Detected Type', '')).strip().lower() == 'buy'
@@ -25,6 +26,7 @@ def main():
         if is_buy and is_sale:
             print(f"⚠️  ALERTE : Ligne {idx} détectée comme ACHAT et VENTE simultanément ! Refid: {row['refid']}")
 
+        results_pta_before.append(f"{pta_running:f}")
         current_pta_to_deduct = Decimal('0')
 
         try:
@@ -35,6 +37,10 @@ def main():
                 pta_running += sent_amt
                 
             elif is_sale:
+                if "2025-01-05 06:33:41.545000+00:00" in str(row.get('Date', '')):
+                    print(f"DEBUG - Vente détectée le : ", row.get('Date', ''))
+                    print(f"DEBUG - PTA avant calcul : {pta_running}")
+                    print(f"DEBUG - Ratio utilisé : {row.get('PTA_sell_ratio')}")
                 # Calcul du PTA à déduire pour cette vente
                 ratio_raw = str(row.get('PTA_sell_ratio', '0')).strip()
                 ratio = Decimal(ratio_raw) if ratio_raw else Decimal('0')
@@ -59,6 +65,7 @@ def main():
 
     # Ajout des colonnes au DataFrame
     df['PTA'] = results_pta
+    df['PTA_before_tx'] = results_pta_before
     df['PTA_to_deduct'] = results_pta_to_deduct
 
     # Réorganisation des colonnes
