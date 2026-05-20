@@ -19,6 +19,7 @@ scripts = [
     "1b_crypto_com_convert_date.py", 
     "1c_merge_and_sort_all_trades.py",
     "1d_normalize.py",
+    "1e_reclassify_payments.py",
     "2_create_account_situation.py",
     "2b_check_amount_quality.py",
     "3_identify_taxable_event.py",

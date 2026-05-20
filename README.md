@@ -45,6 +45,7 @@ Le processus est décomposé en scripts numérotés exécutables via `main.py`.
 *   **`8_calculate_wallet_values.py`** : Calcule la valeur globale du portefeuille avant et après chaque vente.
 *   **`9_PTA_sell_ratio.py`** : Calcule le ratio de cession (Prix de cession / Valeur globale).
 *   **`10_compute_PTA.py`** : Calcule le Prix Total d'Acquisition (PTA) courant et le montant du PTA à déduire pour la vente actuelle.
+*   **`11_compute_pv.py`** : Calcule la plus value.
 
 ---
 

@@ -30,6 +30,7 @@ FILE_BITMART_2024 = DIR_0_ORIGINAL / "bitmart_2024.csv"
 
 FILE_ALL_TRADES = DIR_1_RFI / "all_trades.csv"
 FILE_ALL_TRADES_NORMALIZED = DIR_1_RFI / "all_trades_normalized.csv"
+FILE_ALL_TRADES_RECLASSIFIED = DIR_1_RFI / "all_trades_reclassified_payments.csv"
 FILE_ACCOUNT_SITUATION = DIR_2_AS / "account_situation.csv"
 FILE_TAXABLE_EVENT = DIR_3_TAXABLE_EVENT / "taxable_event.csv"
 FILE_REQUIRED_PRICES = DIR_4_REQUIRED_PRICES / "required_prices.csv"
@@ -94,3 +95,7 @@ KRAKEN_CRYPTO_ID = {
     # --- ACTIF VIRTUEL ---
     "DUST_VIRTUAL": "DUST_VIRTUAL"
 }
+
+
+# On converti les achats de la vie réelle en tant que vente en euros
+PAYMENTS_RECLASSIFICATION = { "FTZ4E5p-R0LhaXJi7muB4IK5hNuxKH": {"Received Currency": "EUR", "Received Amount": "83.90"} }

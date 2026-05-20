@@ -77,7 +77,7 @@ def add_row_to_asdf_from_transaction_row(row_ready_for_ingest, asdf_last_row):
 
 # --- MAIN ---
 
-ready_for_ingest = pd.read_csv(config.FILE_ALL_TRADES_NORMALIZED, dtype=str)
+ready_for_ingest = pd.read_csv(config.FILE_ALL_TRADES_RECLASSIFIED, dtype=str)
 
 # Création des colonnes UNIQUEMENT avec les noms mappés (BTC, ETH, etc.)
 all_currencies_raw = set(ready_for_ingest["Received Currency"].dropna()) | \
